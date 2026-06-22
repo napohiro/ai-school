@@ -210,15 +210,15 @@ export default function LessonDetailScreen({
 
         {/* ===== Prev / Next Navigation ===== */}
         {(prevLesson || nextLesson) && (
-          <div style={{ display: 'grid', gridTemplateColumns: prevLesson && nextLesson ? '1fr 1fr' : '1fr', gap: '8px', marginBottom: '8px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '8px' }}>
             {prevLesson && (
               <button
                 className="btn btn-secondary"
-                style={{ textAlign: 'left', fontSize: '13px', padding: '10px 12px' }}
+                style={{ textAlign: 'left', fontSize: '13px', padding: '10px 14px', width: '100%' }}
                 onClick={() => onNavigateLesson(prevLesson.id)}
               >
                 <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 600, marginBottom: '2px' }}>‹ 前のレッスン</div>
-                <div style={{ fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <div style={{ fontWeight: 700, lineHeight: 1.4 }}>
                   {prevLesson.title}
                 </div>
               </button>
@@ -226,11 +226,11 @@ export default function LessonDetailScreen({
             {nextLesson && (
               <button
                 className="btn btn-primary"
-                style={{ textAlign: 'right', fontSize: '13px', padding: '10px 12px' }}
+                style={{ textAlign: 'right', fontSize: '13px', padding: '10px 14px', width: '100%' }}
                 onClick={() => onNavigateLesson(nextLesson.id)}
               >
                 <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.75)', fontWeight: 600, marginBottom: '2px' }}>次のレッスン ›</div>
-                <div style={{ fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <div style={{ fontWeight: 700, lineHeight: 1.4 }}>
                   {nextLesson.title}
                 </div>
               </button>

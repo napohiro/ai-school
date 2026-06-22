@@ -140,6 +140,7 @@ export default function App() {
       const lesson = lessons[lessonIdx];
       return (
         <LessonDetailScreen
+          key={subScreen.id}
           lesson={lesson}
           isCompleted={progress.completedLessons.includes(subScreen.id)}
           onComplete={handleLessonComplete}
@@ -159,6 +160,7 @@ export default function App() {
       const lesson = lessonsAdvanced[lessonIdx];
       return (
         <LessonDetailScreen
+          key={subScreen.id}
           lesson={lesson}
           isCompleted={(progress.completedAdvancedLessons || []).includes(subScreen.id)}
           onComplete={handleAdvancedLessonComplete}
@@ -178,6 +180,7 @@ export default function App() {
       const lesson = lessonsExpert[lessonIdx];
       return (
         <LessonDetailScreen
+          key={subScreen.id}
           lesson={lesson}
           isCompleted={(progress.completedExpertLessons || []).includes(subScreen.id)}
           onComplete={handleExpertLessonComplete}
