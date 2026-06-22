@@ -1,6 +1,17 @@
 import { useState } from 'react';
 
-export default function LessonDetailScreen({ lesson, isCompleted, onComplete, onBack, onQuizSubmit }) {
+export default function LessonDetailScreen({
+  lesson,
+  isCompleted,
+  onComplete,
+  onBack,
+  onQuizSubmit,
+  courseType,
+  courseIndex,
+  prevLesson,
+  nextLesson,
+  onNavigateLesson,
+}) {
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [submitted, setSubmitted] = useState(false);
 
@@ -8,6 +19,7 @@ export default function LessonDetailScreen({ lesson, isCompleted, onComplete, on
 
   const { quiz } = lesson;
   const isCorrect = selectedAnswer === quiz.answer;
+  const courseName = courseType === 'beginner' ? '初級コース' : courseType === 'advanced' ? '中級コース' : null;
 
   function handleSelect(index) {
     if (submitted) return;
@@ -36,8 +48,27 @@ export default function LessonDetailScreen({ lesson, isCompleted, onComplete, on
       {/* Header */}
       <div className="detail-header">
         <div className="detail-header-content">
+          {/* Breadcrumb */}
+          {courseName && (
+            <div style={{
+              fontSize: '11px',
+              color: 'rgba(255,255,255,0.65)',
+              marginBottom: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              flexWrap: 'wrap',
+            }}>
+              <span>AIスクール</span>
+              <span>›</span>
+              <span>{courseType === 'beginner' ? '📗' : '📘'} {courseName}</span>
+              <span>›</span>
+              <span>第{courseIndex}回</span>
+            </div>
+          )}
+
           <button className="back-btn" onClick={onBack}>
-            ‹ もどる
+            ‹ コース一覧
           </button>
           <span className="detail-emoji">{lesson.emoji}</span>
           <div className="detail-title">{lesson.title}</div>
@@ -122,7 +153,11 @@ export default function LessonDetailScreen({ lesson, isCompleted, onComplete, on
           ))}
 
           {!submitted && selectedAnswer !== null && (
-            <button className="btn btn-primary btn-full" style={{ marginTop: '4px' }} onClick={handleSubmitQuiz}>
+            <button
+              className="btn btn-primary btn-full"
+              style={{ marginTop: '4px' }}
+              onClick={handleSubmitQuiz}
+            >
               答え合わせをする
             </button>
           )}
@@ -173,8 +208,38 @@ export default function LessonDetailScreen({ lesson, isCompleted, onComplete, on
           </div>
         )}
 
-        <button className="btn btn-secondary btn-full" onClick={onBack}>
-          ← レッスン一覧に戻る
+        {/* ===== Prev / Next Navigation ===== */}
+        {(prevLesson || nextLesson) && (
+          <div style={{ display: 'grid', gridTemplateColumns: prevLesson && nextLesson ? '1fr 1fr' : '1fr', gap: '8px', marginBottom: '8px' }}>
+            {prevLesson && (
+              <button
+                className="btn btn-secondary"
+                style={{ textAlign: 'left', fontSize: '13px', padding: '10px 12px' }}
+                onClick={() => onNavigateLesson(prevLesson.id)}
+              >
+                <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 600, marginBottom: '2px' }}>‹ 前のレッスン</div>
+                <div style={{ fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {prevLesson.title}
+                </div>
+              </button>
+            )}
+            {nextLesson && (
+              <button
+                className="btn btn-primary"
+                style={{ textAlign: 'right', fontSize: '13px', padding: '10px 12px' }}
+                onClick={() => onNavigateLesson(nextLesson.id)}
+              >
+                <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.75)', fontWeight: 600, marginBottom: '2px' }}>次のレッスン ›</div>
+                <div style={{ fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {nextLesson.title}
+                </div>
+              </button>
+            )}
+          </div>
+        )}
+
+        <button className="btn btn-ghost btn-full" onClick={onBack}>
+          ← コース一覧へ戻る
         </button>
 
         <div style={{ height: '16px' }} />

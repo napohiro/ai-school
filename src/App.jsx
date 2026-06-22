@@ -115,7 +115,8 @@ export default function App() {
 
   function renderContent() {
     if (activeTab === 'learning' && subScreen?.type === 'lesson') {
-      const lesson = lessons.find((l) => l.id === subScreen.id);
+      const lessonIdx = lessons.findIndex((l) => l.id === subScreen.id);
+      const lesson = lessons[lessonIdx];
       return (
         <LessonDetailScreen
           lesson={lesson}
@@ -123,19 +124,30 @@ export default function App() {
           onComplete={handleLessonComplete}
           onBack={handleBack}
           onQuizSubmit={(isCorrect) => recordQuizResult(subScreen.id, isCorrect)}
+          courseType="beginner"
+          courseIndex={lessonIdx + 1}
+          prevLesson={lessonIdx > 0 ? lessons[lessonIdx - 1] : null}
+          nextLesson={lessonIdx < lessons.length - 1 ? lessons[lessonIdx + 1] : null}
+          onNavigateLesson={(id) => { setSubScreen({ type: 'lesson', id }); scrollToTop(); }}
         />
       );
     }
 
     if (activeTab === 'learning' && subScreen?.type === 'advancedLesson') {
-      const lesson = lessonsAdvanced.find((l) => l.id === subScreen.id);
+      const lessonIdx = lessonsAdvanced.findIndex((l) => l.id === subScreen.id);
+      const lesson = lessonsAdvanced[lessonIdx];
       return (
         <LessonDetailScreen
           lesson={lesson}
-          isCompleted={progress.completedAdvancedLessons.includes(subScreen.id)}
+          isCompleted={(progress.completedAdvancedLessons || []).includes(subScreen.id)}
           onComplete={handleAdvancedLessonComplete}
           onBack={handleBack}
           onQuizSubmit={(isCorrect) => recordQuizResult(subScreen.id, isCorrect)}
+          courseType="advanced"
+          courseIndex={lessonIdx + 1}
+          prevLesson={lessonIdx > 0 ? lessonsAdvanced[lessonIdx - 1] : null}
+          nextLesson={lessonIdx < lessonsAdvanced.length - 1 ? lessonsAdvanced[lessonIdx + 1] : null}
+          onNavigateLesson={(id) => { setSubScreen({ type: 'advancedLesson', id }); scrollToTop(); }}
         />
       );
     }
@@ -164,6 +176,7 @@ export default function App() {
             getTotalProgress={getTotalProgress}
             getNextLesson={getNextLesson}
             lessons={lessons}
+            lessonsAdvanced={lessonsAdvanced}
             missions={missions}
             onNavigate={handleNavigate}
           />
