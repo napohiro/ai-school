@@ -2,18 +2,32 @@ import { BADGE_DEFS } from '../hooks/useProgress';
 
 const ALL_BADGES = Object.entries(BADGE_DEFS).map(([id, def]) => ({ id, ...def }));
 
-export default function MyPageScreen({ progress, getLevel, getLevelProgress, getTotalProgress, onReset, quizStats }) {
+const COURSE_CARDS = [
+  { key: 'beginner', label: '初級コース', icon: '📗', color: '#3b82f6', colorBg: 'rgba(59,130,246,0.08)', desc: 'AIの基礎を12レッスンで学ぶ', total: 12 },
+  { key: 'advanced', label: '中級コース', icon: '📘', color: '#10b981', colorBg: 'rgba(16,185,129,0.08)', desc: 'AIを仕事に活かす12レッスン', total: 12 },
+  { key: 'expert',   label: '上級コース', icon: '📙', color: '#8b5cf6', colorBg: 'rgba(139,92,246,0.08)', desc: 'AIでアプリを作る12レッスン',  total: 12 },
+  { key: 'mission',  label: '実践ミッション', icon: '⚡', color: '#f59e0b', colorBg: 'rgba(245,158,11,0.08)', desc: 'AIを使って実際に作る',    total: 6 },
+];
+
+export default function MyPageScreen({ progress, getLevel, getLevelProgress, getTotalProgress, onReset, quizStats, isGraduated }) {
   const levelInfo = getLevel();
   const levelPct = getLevelProgress();
   const totalPct = getTotalProgress();
+  const graduated = isGraduated ? isGraduated() : false;
 
+  const expertDone = (progress.completedExpertLessons || []).length;
   const advancedDone = (progress.completedAdvancedLessons || []).length;
-  const beginnerPct = Math.round((progress.completedLessons.length / 12) * 100);
-  const advancedPct = Math.round((advancedDone / 12) * 100);
-  const missionPct = Math.round((progress.completedMissions.length / 6) * 100);
-  const totalCompleted =
-    progress.completedLessons.length + progress.completedMissions.length + advancedDone;
+  const missionDone = progress.completedMissions.length;
+  const beginnerDone = progress.completedLessons.length;
 
+  const doneCounts = {
+    beginner: beginnerDone,
+    advanced: advancedDone,
+    expert:   expertDone,
+    mission:  missionDone,
+  };
+
+  const totalCompleted = beginnerDone + advancedDone + expertDone + missionDone;
   const memoEntries = Object.entries(progress.missionMemos).filter(([, memo]) => memo && memo.trim());
 
   function handleReset() {
@@ -32,6 +46,34 @@ export default function MyPageScreen({ progress, getLevel, getLevelProgress, get
       </div>
 
       <div style={{ padding: '16px' }}>
+
+        {/* ===== 卒業証書 ===== */}
+        {graduated && (
+          <div style={{
+            background: 'linear-gradient(135deg, #fbbf24, #f59e0b, #d97706)',
+            borderRadius: '20px',
+            padding: '24px',
+            marginBottom: '16px',
+            color: 'white',
+            textAlign: 'center',
+            boxShadow: '0 8px 32px rgba(245,158,11,0.3)',
+          }}>
+            <div style={{ fontSize: '48px', marginBottom: '8px' }}>🎓</div>
+            <div style={{ fontSize: '11px', fontWeight: 700, opacity: 0.85, letterSpacing: '2px', marginBottom: '4px' }}>CERTIFICATE OF COMPLETION</div>
+            <div style={{ fontSize: '22px', fontWeight: 900, marginBottom: '8px' }}>AIスクール 卒業証</div>
+            <div style={{ fontSize: '13px', opacity: 0.9, marginBottom: '16px', lineHeight: 1.6 }}>
+              あなたはAIスクールの全カリキュラムを修了しました。
+            </div>
+            <div style={{ background: 'rgba(255,255,255,0.2)', borderRadius: '14px', padding: '14px', textAlign: 'left', marginBottom: '14px' }}>
+              <div style={{ fontSize: '12px', fontWeight: 700, marginBottom: '8px', opacity: 0.9 }}>習得スキル</div>
+              {['✓ AI基礎・活用', '✓ プロンプト設計', '✓ コンテンツ制作', '✓ AI自動化', '✓ GitHub・Vercel', '✓ AIアプリ開発'].map((s) => (
+                <div key={s} style={{ fontSize: '13px', fontWeight: 700, marginBottom: '3px' }}>{s}</div>
+              ))}
+            </div>
+            <div style={{ fontSize: '14px', fontWeight: 900, letterSpacing: '0.5px' }}>👑 AI個人開発者 認定</div>
+          </div>
+        )}
+
         {/* ===== Level Card ===== */}
         <div style={{
           background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
@@ -67,79 +109,33 @@ export default function MyPageScreen({ progress, getLevel, getLevelProgress, get
         {/* ===== Course Progress ===== */}
         <div style={{ marginBottom: '12px' }}>
           <div className="section-title" style={{ marginBottom: '10px' }}>📚 コース別進捗</div>
-
-          {/* Beginner */}
-          <div className="card" style={{ marginBottom: '10px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
-              <div style={{
-                width: '40px', height: '40px', borderRadius: '10px',
-                background: 'rgba(99,102,241,0.1)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: '20px', flexShrink: 0,
-              }}>📗</div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: 700, fontSize: '14px', color: '#1e293b' }}>初級コース</div>
-                <div style={{ fontSize: '12px', color: '#94a3b8' }}>AIの基礎を12レッスンで学ぶ</div>
-              </div>
-              <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: '26px', fontWeight: 900, color: '#6366f1', lineHeight: 1 }}>{beginnerPct}%</div>
-                <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 600 }}>
-                  {progress.completedLessons.length} / 12
+          {COURSE_CARDS.map((c) => {
+            const done = doneCounts[c.key];
+            const pct = Math.round((done / c.total) * 100);
+            return (
+              <div key={c.key} className="card" style={{ marginBottom: '10px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                  <div style={{
+                    width: '40px', height: '40px', borderRadius: '10px',
+                    background: c.colorBg,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: '20px', flexShrink: 0,
+                  }}>{c.icon}</div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: 700, fontSize: '14px', color: '#1e293b' }}>{c.label}</div>
+                    <div style={{ fontSize: '12px', color: '#94a3b8' }}>{c.desc}</div>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: '26px', fontWeight: 900, color: c.color, lineHeight: 1 }}>{pct}%</div>
+                    <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 600 }}>{done} / {c.total}</div>
+                  </div>
+                </div>
+                <div style={{ height: '6px', borderRadius: '99px', background: '#e2e8f0', overflow: 'hidden' }}>
+                  <div style={{ height: '100%', borderRadius: '99px', background: c.color, width: `${pct}%`, transition: 'width 0.5s ease' }} />
                 </div>
               </div>
-            </div>
-            <div className="progress-bar-outer">
-              <div className="progress-bar-inner" style={{ width: `${beginnerPct}%` }} />
-            </div>
-          </div>
-
-          {/* Advanced */}
-          <div className="card" style={{ marginBottom: '10px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
-              <div style={{
-                width: '40px', height: '40px', borderRadius: '10px',
-                background: 'rgba(79,70,229,0.1)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: '20px', flexShrink: 0,
-              }}>📘</div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: 700, fontSize: '14px', color: '#1e293b' }}>中級コース</div>
-                <div style={{ fontSize: '12px', color: '#94a3b8' }}>AIを仕事に活かす12レッスン</div>
-              </div>
-              <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: '26px', fontWeight: 900, color: '#6366f1', lineHeight: 1 }}>{advancedPct}%</div>
-                <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 600 }}>{advancedDone} / 12</div>
-              </div>
-            </div>
-            <div className="progress-bar-outer">
-              <div className="progress-bar-inner" style={{ width: `${advancedPct}%` }} />
-            </div>
-          </div>
-
-          {/* Missions */}
-          <div className="card">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
-              <div style={{
-                width: '40px', height: '40px', borderRadius: '10px',
-                background: 'rgba(245,158,11,0.1)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: '20px', flexShrink: 0,
-              }}>⚡</div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: 700, fontSize: '14px', color: '#1e293b' }}>実践ミッション</div>
-                <div style={{ fontSize: '12px', color: '#94a3b8' }}>AIを使って実際に体験する</div>
-              </div>
-              <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: '26px', fontWeight: 900, color: '#6366f1', lineHeight: 1 }}>{missionPct}%</div>
-                <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 600 }}>
-                  {progress.completedMissions.length} / 6
-                </div>
-              </div>
-            </div>
-            <div className="progress-bar-outer">
-              <div className="progress-bar-inner" style={{ width: `${missionPct}%` }} />
-            </div>
-          </div>
+            );
+          })}
         </div>
 
         {/* ===== Quick Stats ===== */}
@@ -174,14 +170,14 @@ export default function MyPageScreen({ progress, getLevel, getLevelProgress, get
             <div className="progress-bar-inner" style={{ width: `${totalPct}%` }} />
           </div>
           <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '8px' }}>
-            {totalCompleted} / 30 コンテンツ完了（初級12・中級12・ミッション6）
+            {totalCompleted} / 42 コンテンツ完了（初級12・中級12・上級12・ミッション6）
           </div>
         </div>
 
-        {/* ===== Quiz Stats (detail) ===== */}
+        {/* ===== Quiz Stats ===== */}
         {quizStats && quizStats.attempted > 0 && (
           <div className="card" style={{ marginBottom: '16px' }}>
-            <div style={{ fontWeight: 700, fontSize: '14px', marginBottom: '12px' }}>🧩 クイズ正答率（詳細）</div>
+            <div style={{ fontWeight: 700, fontSize: '14px', marginBottom: '12px' }}>🧩 クイズ正答率</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '10px' }}>
               <div style={{ fontSize: '40px', fontWeight: 900, color: '#6366f1', lineHeight: 1 }}>
                 {quizStats.accuracy}%
@@ -230,11 +226,13 @@ export default function MyPageScreen({ progress, getLevel, getLevelProgress, get
           <div className="section-title">🗺️ レベルガイド</div>
           <div className="card">
             {[
-              { level: 1, name: 'AI初心者', emoji: '🎮', xp: '0〜' },
-              { level: 2, name: 'AI見習い', emoji: '🌱', xp: '150〜' },
-              { level: 3, name: 'AIビギナー', emoji: '⭐', xp: '400〜' },
-              { level: 4, name: 'AI活用者', emoji: '🚀', xp: '700〜' },
-              { level: 5, name: 'AI実践者', emoji: '🏆', xp: '1000〜' },
+              { level: 1, name: 'AI初心者',    emoji: '🎮', xp: '0〜149' },
+              { level: 2, name: 'AI見習い',    emoji: '🌱', xp: '150〜399' },
+              { level: 3, name: 'AIビギナー',  emoji: '⭐', xp: '400〜699' },
+              { level: 4, name: 'AI活用者',    emoji: '🚀', xp: '700〜999' },
+              { level: 5, name: 'AI実践者',    emoji: '🏆', xp: '1000〜1499' },
+              { level: 6, name: 'AIクリエイター', emoji: '🎨', xp: '1500〜1999' },
+              { level: 7, name: 'AI個人開発者', emoji: '👑', xp: '2000〜' },
             ].map((l) => (
               <div key={l.level} style={{
                 display: 'flex', alignItems: 'center', gap: '12px',
@@ -246,7 +244,7 @@ export default function MyPageScreen({ progress, getLevel, getLevelProgress, get
                   <div style={{ fontWeight: 700, fontSize: '14px' }}>Lv.{l.level} {l.name}</div>
                   <div style={{ fontSize: '12px', color: '#94a3b8' }}>{l.xp} XP</div>
                 </div>
-                {levelInfo.level >= l.level && (
+                {levelInfo.level > l.level && (
                   <span style={{ color: '#10b981', fontWeight: 700, fontSize: '14px' }}>✓ 達成</span>
                 )}
                 {levelInfo.level === l.level && (
@@ -281,7 +279,7 @@ export default function MyPageScreen({ progress, getLevel, getLevelProgress, get
         {/* ===== Version + Reset ===== */}
         <div className="card" style={{ marginBottom: '16px', textAlign: 'center' }}>
           <div style={{ fontSize: '13px', color: '#64748b', lineHeight: 1.8 }}>
-            <div style={{ fontWeight: 700, color: '#1e293b', marginBottom: '4px' }}>🤖 AIスクール Ver.0.2.0</div>
+            <div style={{ fontWeight: 700, color: '#1e293b', marginBottom: '4px' }}>🤖 AIスクール Ver.0.3.0</div>
             <div>更新日：2026/06/22</div>
             <div style={{ marginTop: '8px', fontSize: '12px' }}>AIを基礎の基礎から、使える力へ</div>
           </div>

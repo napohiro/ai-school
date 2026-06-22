@@ -4,6 +4,7 @@ import './App.css';
 import { useProgress } from './hooks/useProgress';
 import { lessons } from './data/lessons';
 import { lessonsAdvanced } from './data/lessonsAdvanced';
+import { lessonsExpert } from './data/lessonsExpert';
 import { missions } from './data/missions';
 
 import BottomNav from './components/BottomNav';
@@ -33,6 +34,7 @@ export default function App() {
     completeLesson,
     completeMission,
     completeAdvancedLesson,
+    completeExpertLesson,
     saveMemo,
     setWelcomeSeen,
     resetAll,
@@ -42,6 +44,7 @@ export default function App() {
     getNextLesson,
     recordQuizResult,
     getQuizStats,
+    isGraduated,
   } = useProgress();
 
   const showWelcome = !progress.welcomeSeen;
@@ -89,6 +92,16 @@ export default function App() {
     const result = completeAdvancedLesson(subScreen.id);
     if (result) {
       triggerXpToast(result.xp);
+      if (result.newBadges.length > 0) triggerBadge(result.newBadges[0]);
+    }
+  }
+
+  function handleExpertLessonComplete() {
+    if (!subScreen || subScreen.type !== 'expertLesson') return;
+    const result = completeExpertLesson(subScreen.id);
+    if (result) {
+      triggerXpToast(result.xp);
+      if (result.newBadges.length > 0) triggerBadge(result.newBadges[0]);
     }
   }
 
@@ -113,7 +126,15 @@ export default function App() {
     };
   }, []);
 
+  // Determine initialTab for LearningScreen based on subScreen type
+  function getLearningInitialTab() {
+    if (subScreen?.type === 'advancedTab') return 'advanced';
+    if (subScreen?.type === 'expertTab') return 'expert';
+    return 'beginner';
+  }
+
   function renderContent() {
+    // Lesson detail screens
     if (activeTab === 'learning' && subScreen?.type === 'lesson') {
       const lessonIdx = lessons.findIndex((l) => l.id === subScreen.id);
       const lesson = lessons[lessonIdx];
@@ -152,6 +173,25 @@ export default function App() {
       );
     }
 
+    if (activeTab === 'learning' && subScreen?.type === 'expertLesson') {
+      const lessonIdx = lessonsExpert.findIndex((l) => l.id === subScreen.id);
+      const lesson = lessonsExpert[lessonIdx];
+      return (
+        <LessonDetailScreen
+          lesson={lesson}
+          isCompleted={(progress.completedExpertLessons || []).includes(subScreen.id)}
+          onComplete={handleExpertLessonComplete}
+          onBack={handleBack}
+          onQuizSubmit={(isCorrect) => recordQuizResult(subScreen.id, isCorrect)}
+          courseType="expert"
+          courseIndex={lessonIdx + 1}
+          prevLesson={lessonIdx > 0 ? lessonsExpert[lessonIdx - 1] : null}
+          nextLesson={lessonIdx < lessonsExpert.length - 1 ? lessonsExpert[lessonIdx + 1] : null}
+          onNavigateLesson={(id) => { setSubScreen({ type: 'expertLesson', id }); scrollToTop(); }}
+        />
+      );
+    }
+
     if (activeTab === 'practice' && subScreen?.type === 'mission') {
       const mission = missions.find((m) => m.id === subScreen.id);
       return (
@@ -177,6 +217,7 @@ export default function App() {
             getNextLesson={getNextLesson}
             lessons={lessons}
             lessonsAdvanced={lessonsAdvanced}
+            lessonsExpert={lessonsExpert}
             missions={missions}
             onNavigate={handleNavigate}
           />
@@ -190,7 +231,10 @@ export default function App() {
             lessonsAdvanced={lessonsAdvanced}
             completedAdvancedLessons={progress.completedAdvancedLessons}
             onSelectAdvancedLesson={(id) => { setSubScreen({ type: 'advancedLesson', id }); scrollToTop(); }}
-            initialTab={subScreen?.type === 'advancedTab' ? 'advanced' : 'beginner'}
+            lessonsExpert={lessonsExpert}
+            completedExpertLessons={progress.completedExpertLessons}
+            onSelectExpertLesson={(id) => { setSubScreen({ type: 'expertLesson', id }); scrollToTop(); }}
+            initialTab={getLearningInitialTab()}
           />
         );
       case 'practice':
@@ -212,6 +256,7 @@ export default function App() {
             getTotalProgress={getTotalProgress}
             onReset={resetAll}
             quizStats={getQuizStats()}
+            isGraduated={isGraduated}
           />
         );
       default:

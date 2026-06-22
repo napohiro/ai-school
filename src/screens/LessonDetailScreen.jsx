@@ -19,7 +19,7 @@ export default function LessonDetailScreen({
 
   const { quiz } = lesson;
   const isCorrect = selectedAnswer === quiz.answer;
-  const courseName = courseType === 'beginner' ? '初級コース' : courseType === 'advanced' ? '中級コース' : null;
+  const courseName = courseType === 'beginner' ? '初級コース' : courseType === 'advanced' ? '中級コース' : courseType === 'expert' ? '上級コース' : null;
 
   function handleSelect(index) {
     if (submitted) return;
@@ -61,7 +61,7 @@ export default function LessonDetailScreen({
             }}>
               <span>AIスクール</span>
               <span>›</span>
-              <span>{courseType === 'beginner' ? '📗' : '📘'} {courseName}</span>
+              <span>{courseType === 'beginner' ? '📗' : courseType === 'advanced' ? '📘' : '📙'} {courseName}</span>
               <span>›</span>
               <span>第{courseIndex}回</span>
             </div>
