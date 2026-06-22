@@ -3,6 +3,7 @@ import './App.css';
 
 import { useProgress } from './hooks/useProgress';
 import { lessons } from './data/lessons';
+import { lessonsAdvanced } from './data/lessonsAdvanced';
 import { missions } from './data/missions';
 
 import BottomNav from './components/BottomNav';
@@ -31,6 +32,7 @@ export default function App() {
     progress,
     completeLesson,
     completeMission,
+    completeAdvancedLesson,
     saveMemo,
     setWelcomeSeen,
     resetAll,
@@ -82,6 +84,14 @@ export default function App() {
     }
   }
 
+  function handleAdvancedLessonComplete() {
+    if (!subScreen || subScreen.type !== 'advancedLesson') return;
+    const result = completeAdvancedLesson(subScreen.id);
+    if (result) {
+      triggerXpToast(result.xp);
+    }
+  }
+
   function handleMissionComplete() {
     if (!subScreen || subScreen.type !== 'mission') return;
     const result = completeMission(subScreen.id);
@@ -111,6 +121,19 @@ export default function App() {
           lesson={lesson}
           isCompleted={progress.completedLessons.includes(subScreen.id)}
           onComplete={handleLessonComplete}
+          onBack={handleBack}
+          onQuizSubmit={(isCorrect) => recordQuizResult(subScreen.id, isCorrect)}
+        />
+      );
+    }
+
+    if (activeTab === 'learning' && subScreen?.type === 'advancedLesson') {
+      const lesson = lessonsAdvanced.find((l) => l.id === subScreen.id);
+      return (
+        <LessonDetailScreen
+          lesson={lesson}
+          isCompleted={progress.completedAdvancedLessons.includes(subScreen.id)}
+          onComplete={handleAdvancedLessonComplete}
           onBack={handleBack}
           onQuizSubmit={(isCorrect) => recordQuizResult(subScreen.id, isCorrect)}
         />
@@ -151,6 +174,9 @@ export default function App() {
             lessons={lessons}
             completedLessons={progress.completedLessons}
             onSelectLesson={(id) => { setSubScreen({ type: 'lesson', id }); scrollToTop(); }}
+            lessonsAdvanced={lessonsAdvanced}
+            completedAdvancedLessons={progress.completedAdvancedLessons}
+            onSelectAdvancedLesson={(id) => { setSubScreen({ type: 'advancedLesson', id }); scrollToTop(); }}
           />
         );
       case 'practice':

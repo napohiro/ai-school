@@ -5,6 +5,7 @@ const STORAGE_KEY = 'ai-school-progress-v1';
 const INITIAL_STATE = {
   completedLessons: [],
   completedMissions: [],
+  completedAdvancedLessons: [],
   xp: 0,
   missionMemos: {},
   badges: [],
@@ -116,9 +117,20 @@ export function useProgress() {
     return Math.round(((xp - start) / (end - start)) * 100);
   }
 
+  function completeAdvancedLesson(lessonId) {
+    if (progress.completedAdvancedLessons.includes(lessonId)) return null;
+    const newLessons = [...progress.completedAdvancedLessons, lessonId];
+    const newXp = progress.xp + 50;
+    update({ ...progress, completedAdvancedLessons: newLessons, xp: newXp });
+    return { xp: 50, newBadges: [] };
+  }
+
   function getTotalProgress() {
-    const total = 12 + 6;
-    const completed = progress.completedLessons.length + progress.completedMissions.length;
+    const total = 12 + 6 + 12;
+    const completed =
+      progress.completedLessons.length +
+      progress.completedMissions.length +
+      progress.completedAdvancedLessons.length;
     return Math.round((completed / total) * 100);
   }
 
@@ -142,6 +154,7 @@ export function useProgress() {
     progress,
     completeLesson,
     completeMission,
+    completeAdvancedLesson,
     saveMemo,
     setWelcomeSeen,
     resetAll,

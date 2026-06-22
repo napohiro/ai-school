@@ -107,6 +107,32 @@ export default function MyPageScreen({ progress, getLevel, getLevelProgress, get
           )}
         </div>
 
+        {/* Course Progress */}
+        <div className="card" style={{ marginBottom: '16px' }}>
+          <div style={{ fontWeight: 700, fontSize: '14px', marginBottom: '14px' }}>📚 コース別進捗</div>
+
+          {[
+            { label: '📗 初級コース', count: progress.completedLessons.length, total: 12 },
+            { label: '📘 中級コース', count: (progress.completedAdvancedLessons || []).length, total: 12 },
+            { label: '⚡ 実践ミッション', count: progress.completedMissions.length, total: 6 },
+          ].map(({ label, count, total }) => {
+            const pct = Math.round((count / total) * 100);
+            return (
+              <div key={label} style={{ marginBottom: '14px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
+                  <span style={{ fontSize: '13px', fontWeight: 600, color: '#475569' }}>{label}</span>
+                  <span style={{ fontSize: '13px', fontWeight: 800, color: '#6366f1' }}>
+                    {count} / {total}
+                  </span>
+                </div>
+                <div className="progress-bar-outer">
+                  <div className="progress-bar-inner" style={{ width: `${pct}%` }} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
         {/* Total Progress */}
         <div className="card" style={{ marginBottom: '16px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
@@ -117,7 +143,7 @@ export default function MyPageScreen({ progress, getLevel, getLevelProgress, get
             <div className="progress-bar-inner" style={{ width: `${totalPct}%` }} />
           </div>
           <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '8px' }}>
-            {progress.completedLessons.length + progress.completedMissions.length} / 18 コンテンツ完了
+            {progress.completedLessons.length + progress.completedMissions.length + (progress.completedAdvancedLessons || []).length} / 30 コンテンツ完了
           </div>
         </div>
 
