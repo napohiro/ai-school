@@ -177,6 +177,7 @@ export default function App() {
             lessonsAdvanced={lessonsAdvanced}
             completedAdvancedLessons={progress.completedAdvancedLessons}
             onSelectAdvancedLesson={(id) => { setSubScreen({ type: 'advancedLesson', id }); scrollToTop(); }}
+            initialTab={subScreen?.type === 'advancedTab' ? 'advanced' : 'beginner'}
           />
         );
       case 'practice':

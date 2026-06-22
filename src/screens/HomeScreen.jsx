@@ -5,7 +5,9 @@ export default function HomeScreen({ progress, getLevel, getLevelProgress, getTo
   const nextLesson = getNextLesson(lessons);
   const nextMission = missions.find((m) => !progress.completedMissions.includes(m.id));
 
-  const completedCount = progress.completedLessons.length + progress.completedMissions.length;
+  const advancedDone = (progress.completedAdvancedLessons || []).length;
+  const completedCount =
+    progress.completedLessons.length + progress.completedMissions.length + advancedDone;
 
   return (
     <div>
@@ -67,7 +69,7 @@ export default function HomeScreen({ progress, getLevel, getLevelProgress, getTo
             <div className="progress-bar-inner" style={{ width: `${totalPct}%` }} />
           </div>
           <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '8px' }}>
-            {completedCount} / 18 コンテンツ完了
+            {completedCount} / 30 コンテンツ完了
           </div>
         </div>
       </div>
@@ -148,6 +150,50 @@ export default function HomeScreen({ progress, getLevel, getLevelProgress, getTo
               </div>
             );
           })}
+        </div>
+      </div>
+
+      {/* Advanced Course Card */}
+      <div className="section" style={{ paddingTop: '20px' }}>
+        <div className="section-title">📘 中級コース — AIを仕事に使う</div>
+        <div
+          className="card card-hover"
+          style={{
+            background: 'linear-gradient(135deg, rgba(79,70,229,0.06) 0%, rgba(139,92,246,0.06) 100%)',
+            border: '1.5px solid rgba(99,102,241,0.25)',
+          }}
+          onClick={() => onNavigate('learning', { type: 'advancedTab' })}
+        >
+          <div style={{ display: 'flex', gap: '14px', alignItems: 'center' }}>
+            <div style={{ fontSize: '40px', lineHeight: 1 }}>📘</div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontWeight: 800, fontSize: '15px', marginBottom: '4px', color: '#1e293b' }}>
+                AIを「使える」状態にステップアップ
+              </div>
+              <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '8px', lineHeight: 1.5 }}>
+                プロンプト技術・文章作成・リサーチ・開発設計など全12レッスン
+              </div>
+              <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
+                {advancedDone > 0 ? (
+                  <span style={{ background: 'rgba(16,185,129,0.1)', color: '#065f46', fontSize: '11px', fontWeight: 700, padding: '3px 8px', borderRadius: '6px' }}>
+                    ✅ {advancedDone} / 12 完了中
+                  </span>
+                ) : progress.completedLessons.length >= 6 ? (
+                  <span style={{ background: 'rgba(99,102,241,0.12)', color: '#4338ca', fontSize: '11px', fontWeight: 700, padding: '3px 8px', borderRadius: '6px' }}>
+                    ✨ 始める準備ができています！
+                  </span>
+                ) : (
+                  <span style={{ background: 'rgba(245,158,11,0.1)', color: '#92400e', fontSize: '11px', fontWeight: 700, padding: '3px 8px', borderRadius: '6px' }}>
+                    💡 初級を終えたらおすすめ
+                  </span>
+                )}
+                <span style={{ background: 'rgba(99,102,241,0.1)', color: '#6366f1', fontSize: '11px', fontWeight: 700, padding: '3px 8px', borderRadius: '6px' }}>
+                  +600 XP
+                </span>
+              </div>
+            </div>
+            <span style={{ color: '#6366f1', fontSize: '20px', flexShrink: 0 }}>›</span>
+          </div>
         </div>
       </div>
 
