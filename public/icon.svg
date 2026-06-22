@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#8b5cf6"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background (maskable safe zone: inner 80%) -->
+  <rect width="512" height="512" rx="0" fill="url(#bg)"/>
+
+  <!-- Robot face body -->
+  <rect x="130" y="158" width="252" height="210" rx="36" fill="rgba(255,255,255,0.16)" stroke="rgba(255,255,255,0.28)" stroke-width="2"/>
+
+  <!-- Left eye white -->
+  <rect x="162" y="198" width="80" height="62" rx="18" fill="white"/>
+  <!-- Right eye white -->
+  <rect x="270" y="198" width="80" height="62" rx="18" fill="white"/>
+
+  <!-- Left eye purple iris -->
+  <rect x="172" y="208" width="60" height="42" rx="14" fill="#6366f1"/>
+  <!-- Right eye purple iris -->
+  <rect x="280" y="208" width="60" height="42" rx="14" fill="#6366f1"/>
+
+  <!-- Left eye shine -->
+  <circle cx="184" cy="220" r="11" fill="white"/>
+  <!-- Right eye shine -->
+  <circle cx="292" cy="220" r="11" fill="white"/>
+
+  <!-- Left pupil -->
+  <circle cx="196" cy="232" r="7" fill="#4338ca"/>
+  <!-- Right pupil -->
+  <circle cx="304" cy="232" r="7" fill="#4338ca"/>
+
+  <!-- Mouth base -->
+  <rect x="180" y="296" width="152" height="44" rx="22" fill="rgba(255,255,255,0.9)"/>
+  <!-- Mouth dots (grid pattern) -->
+  <circle cx="216" cy="318" r="9" fill="#6366f1" opacity="0.55"/>
+  <circle cx="256" cy="318" r="9" fill="#6366f1" opacity="0.55"/>
+  <circle cx="296" cy="318" r="9" fill="#6366f1" opacity="0.55"/>
+
+  <!-- Antenna pole -->
+  <rect x="248" y="94" width="16" height="66" rx="8" fill="rgba(255,255,255,0.82)"/>
+  <!-- Antenna ball outer -->
+  <circle cx="256" cy="87" r="22" fill="white"/>
+  <!-- Antenna ball inner -->
+  <circle cx="256" cy="87" r="13" fill="#6366f1"/>
+  <!-- Antenna ball dot -->
+  <circle cx="256" cy="87" r="5" fill="white"/>
+
+  <!-- Left ear -->
+  <rect x="90" y="190" width="40" height="54" rx="14" fill="rgba(255,255,255,0.62)"/>
+  <!-- Right ear -->
+  <rect x="382" y="190" width="40" height="54" rx="14" fill="rgba(255,255,255,0.62)"/>
+
+  <!-- Left ear indicator dot -->
+  <circle cx="110" cy="217" r="7" fill="#a5b4fc"/>
+  <!-- Right ear indicator dot -->
+  <circle cx="402" cy="217" r="7" fill="#a5b4fc"/>
+
+  <!-- Cheek blush left -->
+  <ellipse cx="160" cy="284" rx="22" ry="13" fill="rgba(253,186,186,0.32)"/>
+  <!-- Cheek blush right -->
+  <ellipse cx="352" cy="284" rx="22" ry="13" fill="rgba(253,186,186,0.32)"/>
+</svg>
