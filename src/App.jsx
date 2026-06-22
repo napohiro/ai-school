@@ -38,6 +38,8 @@ export default function App() {
     getLevelProgress,
     getTotalProgress,
     getNextLesson,
+    recordQuizResult,
+    getQuizStats,
   } = useProgress();
 
   const showWelcome = !progress.welcomeSeen;
@@ -110,6 +112,7 @@ export default function App() {
           isCompleted={progress.completedLessons.includes(subScreen.id)}
           onComplete={handleLessonComplete}
           onBack={handleBack}
+          onQuizSubmit={(isCorrect) => recordQuizResult(subScreen.id, isCorrect)}
         />
       );
     }
@@ -168,6 +171,7 @@ export default function App() {
             getLevelProgress={getLevelProgress}
             getTotalProgress={getTotalProgress}
             onReset={resetAll}
+            quizStats={getQuizStats()}
           />
         );
       default:

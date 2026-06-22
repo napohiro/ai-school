@@ -2,7 +2,7 @@ import { BADGE_DEFS } from '../hooks/useProgress';
 
 const ALL_BADGES = Object.entries(BADGE_DEFS).map(([id, def]) => ({ id, ...def }));
 
-export default function MyPageScreen({ progress, getLevel, getLevelProgress, getTotalProgress, onReset }) {
+export default function MyPageScreen({ progress, getLevel, getLevelProgress, getTotalProgress, onReset, quizStats }) {
   const levelInfo = getLevel();
   const levelPct = getLevelProgress();
   const totalPct = getTotalProgress();
@@ -80,6 +80,31 @@ export default function MyPageScreen({ progress, getLevel, getLevelProgress, get
               <div className="stat-label">全体達成率</div>
             </div>
           </div>
+        </div>
+
+        {/* Quiz Stats */}
+        <div className="card" style={{ marginBottom: '16px' }}>
+          <div style={{ fontWeight: 700, fontSize: '14px', marginBottom: '12px' }}>🧩 クイズ正答率</div>
+          {quizStats && quizStats.attempted > 0 ? (
+            <>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '10px' }}>
+                <div style={{ fontSize: '36px', fontWeight: 900, color: '#6366f1', lineHeight: 1 }}>
+                  {quizStats.accuracy}%
+                </div>
+                <div style={{ fontSize: '13px', color: '#64748b', lineHeight: 1.7 }}>
+                  <div>{quizStats.attempted} 問中 <strong style={{ color: '#10b981' }}>{quizStats.correct} 問</strong> 正解</div>
+                  <div>{quizStats.attempted - quizStats.correct} 問 不正解</div>
+                </div>
+              </div>
+              <div className="progress-bar-outer">
+                <div className="progress-bar-inner" style={{ width: `${quizStats.accuracy}%` }} />
+              </div>
+            </>
+          ) : (
+            <div style={{ fontSize: '13px', color: '#94a3b8', textAlign: 'center', padding: '8px 0' }}>
+              まだクイズに挑戦していません
+            </div>
+          )}
         </div>
 
         {/* Total Progress */}

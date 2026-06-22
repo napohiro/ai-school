@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-export default function LessonDetailScreen({ lesson, isCompleted, onComplete, onBack }) {
+export default function LessonDetailScreen({ lesson, isCompleted, onComplete, onBack, onQuizSubmit }) {
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [submitted, setSubmitted] = useState(false);
 
@@ -17,6 +17,7 @@ export default function LessonDetailScreen({ lesson, isCompleted, onComplete, on
   function handleSubmitQuiz() {
     if (selectedAnswer === null) return;
     setSubmitted(true);
+    if (onQuizSubmit) onQuizSubmit(selectedAnswer === quiz.answer);
   }
 
   function getOptionClass(index) {

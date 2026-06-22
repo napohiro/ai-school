@@ -9,6 +9,7 @@ const INITIAL_STATE = {
   missionMemos: {},
   badges: [],
   welcomeSeen: false,
+  quizResults: {},
 };
 
 const BADGES = {
@@ -125,6 +126,18 @@ export function useProgress() {
     return lessons.find((l) => !progress.completedLessons.includes(l.id)) || null;
   }
 
+  function recordQuizResult(lessonId, isCorrect) {
+    update({ ...progress, quizResults: { ...progress.quizResults, [lessonId]: isCorrect } });
+  }
+
+  function getQuizStats() {
+    const results = Object.values(progress.quizResults);
+    const attempted = results.length;
+    const correct = results.filter(Boolean).length;
+    const accuracy = attempted > 0 ? Math.round((correct / attempted) * 100) : null;
+    return { attempted, correct, accuracy };
+  }
+
   return {
     progress,
     completeLesson,
@@ -136,5 +149,7 @@ export function useProgress() {
     getLevelProgress,
     getTotalProgress,
     getNextLesson,
+    recordQuizResult,
+    getQuizStats,
   };
 }
