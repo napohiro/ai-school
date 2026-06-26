@@ -1,30 +1,31 @@
 import { BADGE_DEFS } from '../hooks/useProgress';
 import { ROADMAP_STAGES } from '../data/courses';
 
-const ALL_BADGES = Object.entries(BADGE_DEFS).map(([id, def]) => ({ id, ...def }));
+const MAIN_BADGE_IDS = [
+  'beginner_complete', 'advanced_complete', 'expert_complete', 'practice_complete',
+  'monetization_complete', 'graduation_submitted', 'all_graduate',
+];
+
+const MAIN_BADGES = MAIN_BADGE_IDS.map((id) => ({ id, ...BADGE_DEFS[id] }));
 
 const COURSE_CARDS = [
-  { key: 'beginner', label: '初級コース',    icon: '📗', color: '#3b82f6', colorBg: 'rgba(59,130,246,0.08)', desc: 'AIの基礎を12レッスンで学ぶ', total: 12 },
-  { key: 'advanced', label: '中級コース',    icon: '📘', color: '#10b981', colorBg: 'rgba(16,185,129,0.08)', desc: 'AIを仕事に活かす12レッスン', total: 12 },
-  { key: 'expert',   label: '上級コース',    icon: '📙', color: '#8b5cf6', colorBg: 'rgba(139,92,246,0.08)', desc: 'AIでアプリを作る12レッスン',  total: 12 },
-  { key: 'mission',  label: '実践ミッション', icon: '⚡', color: '#f59e0b', colorBg: 'rgba(245,158,11,0.08)', desc: 'AIを使って実際に作る',    total: 6 },
+  { key: 'beginner', label: '基礎',  icon: '📗', color: '#3b82f6', colorBg: 'rgba(59,130,246,0.08)',  desc: '12レッスン', total: 12 },
+  { key: 'advanced', label: '活用',  icon: '📘', color: '#10b981', colorBg: 'rgba(16,185,129,0.08)',  desc: '12レッスン', total: 12 },
+  { key: 'expert',   label: '開発',  icon: '📙', color: '#8b5cf6', colorBg: 'rgba(139,92,246,0.08)',  desc: '12レッスン', total: 12 },
+  { key: 'mission',  label: '実践',  icon: '⚡',  color: '#f59e0b', colorBg: 'rgba(245,158,11,0.08)',  desc: '6ミッション', total: 6 },
 ];
 
 const TITLE_GUIDE = [
-  { displayLevel: 1,  title: 'AI初心者',      emoji: '🎮', xp: '0〜149',   minXp: 0,    nextXp: 150 },
-  { displayLevel: 5,  title: 'AI活用者',      emoji: '🌱', xp: '150〜499', minXp: 150,  nextXp: 500 },
-  { displayLevel: 10, title: 'AIクリエイター', emoji: '✨', xp: '500〜999', minXp: 500,  nextXp: 1000 },
-  { displayLevel: 20, title: 'AIデベロッパー', emoji: '🚀', xp: '1000〜1499', minXp: 1000, nextXp: 1500 },
-  { displayLevel: 30, title: 'AIエンジニア',  emoji: '⚙️', xp: '1500〜1999', minXp: 1500, nextXp: 2000 },
-  { displayLevel: 40, title: 'AIスペシャリスト', emoji: '🔥', xp: '2000〜2999', minXp: 2000, nextXp: 3000 },
-  { displayLevel: 50, title: 'AIマスター',    emoji: '🏆', xp: '3000〜3999', minXp: 3000, nextXp: 4000 },
-  { displayLevel: 60, title: 'AIアーキテクト', emoji: '👑', xp: '4000〜',  minXp: 4000, nextXp: null },
+  { displayLevel: 1,  title: 'AI初心者',       emoji: '🎮', xp: '0〜149',    minXp: 0,    nextXp: 150 },
+  { displayLevel: 5,  title: 'AI活用者',       emoji: '🌱', xp: '150〜499',  minXp: 150,  nextXp: 500 },
+  { displayLevel: 10, title: 'AIクリエイター',  emoji: '✨', xp: '500〜999',  minXp: 500,  nextXp: 1000 },
+  { displayLevel: 20, title: 'AIデベロッパー',  emoji: '🚀', xp: '1000〜1499', minXp: 1000, nextXp: 1500 },
+  { displayLevel: 30, title: 'AIビジネス実践者', emoji: '💰', xp: '1500〜1999', minXp: 1500, nextXp: 2000 },
+  { displayLevel: 40, title: 'AI個人開発者',    emoji: '👑', xp: '2000〜2999', minXp: 2000, nextXp: 3000 },
+  { displayLevel: 50, title: 'AIマスター',      emoji: '🏆', xp: '3000〜',    minXp: 3000, nextXp: null },
 ];
 
-const GRADUATION_SKILLS = [
-  'AI活用', 'プロンプト設計', 'コンテンツ制作', '自動化',
-  'GitHub', 'Vercel', 'Supabase', 'API', 'AIアプリ開発',
-];
+const GRADUATION_SKILLS = ['AI活用', 'プロンプト設計', 'コンテンツ制作', '自動化', 'GitHub', 'Vercel', 'Supabase', 'API', 'AIアプリ開発'];
 
 export default function MyPageScreen({ progress, getLevel, getLevelProgress, getTotalProgress, getTitle, onReset, quizStats, isGraduated, onNavigate }) {
   const levelInfo = getLevel();
@@ -32,12 +33,6 @@ export default function MyPageScreen({ progress, getLevel, getLevelProgress, get
   const levelPct = getLevelProgress();
   const totalPct = getTotalProgress();
   const graduated = isGraduated ? isGraduated() : false;
-
-  const currentTitleEntry = TITLE_GUIDE.find((t) => titleInfo && t.displayLevel === titleInfo.displayLevel);
-  const nextTitleEntry = currentTitleEntry?.nextXp
-    ? TITLE_GUIDE.find((t) => t.minXp === currentTitleEntry.nextXp)
-    : null;
-  const xpToNextTitle = currentTitleEntry?.nextXp ? currentTitleEntry.nextXp - progress.xp : null;
 
   const expertDone   = (progress.completedExpertLessons || []).length;
   const advancedDone = (progress.completedAdvancedLessons || []).length;
@@ -53,6 +48,12 @@ export default function MyPageScreen({ progress, getLevel, getLevelProgress, get
 
   const totalCompleted = beginnerDone + advancedDone + expertDone + missionDone;
   const memoEntries = Object.entries(progress.missionMemos).filter(([, memo]) => memo && memo.trim());
+
+  const currentTitleEntry = TITLE_GUIDE.find((t) => titleInfo && t.displayLevel === titleInfo.displayLevel);
+  const nextTitleEntry = currentTitleEntry?.nextXp
+    ? TITLE_GUIDE.find((t) => t.minXp === currentTitleEntry.nextXp)
+    : null;
+  const xpToNextTitle = currentTitleEntry?.nextXp ? currentTitleEntry.nextXp - progress.xp : null;
 
   function handleReset() {
     if (window.confirm('学習データをすべてリセットしますか？\nこの操作は取り消せません。')) {
@@ -71,7 +72,7 @@ export default function MyPageScreen({ progress, getLevel, getLevelProgress, get
 
       <div style={{ padding: '16px' }}>
 
-        {/* ===== 卒業証書 ===== */}
+        {/* ===== 卒業証書（修了時のみ） ===== */}
         {graduated && (
           <div style={{
             background: 'linear-gradient(135deg, #fbbf24, #f59e0b, #d97706)',
@@ -81,9 +82,9 @@ export default function MyPageScreen({ progress, getLevel, getLevelProgress, get
           }}>
             <div style={{ fontSize: '48px', marginBottom: '8px' }}>🎓</div>
             <div style={{ fontSize: '11px', fontWeight: 700, opacity: 0.85, letterSpacing: '2px', marginBottom: '4px' }}>CERTIFICATE OF COMPLETION</div>
-            <div style={{ fontSize: '22px', fontWeight: 900, marginBottom: '8px' }}>AIスクール 卒業証</div>
+            <div style={{ fontSize: '22px', fontWeight: 900, marginBottom: '8px' }}>AIスクール 認定証</div>
             <div style={{ fontSize: '13px', opacity: 0.9, marginBottom: '16px', lineHeight: 1.6 }}>
-              あなたはAIスクールの全カリキュラムを修了しました。
+              あなたはAIスクールのコアカリキュラムを修了しました。
             </div>
             <div style={{ background: 'rgba(255,255,255,0.2)', borderRadius: '14px', padding: '14px', textAlign: 'left', marginBottom: '14px' }}>
               <div style={{ fontSize: '12px', fontWeight: 700, marginBottom: '8px', opacity: 0.9 }}>習得スキル</div>
@@ -104,7 +105,6 @@ export default function MyPageScreen({ progress, getLevel, getLevelProgress, get
           background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
           borderRadius: '20px', padding: '20px', marginBottom: '16px', color: 'white',
         }}>
-          {/* 称号 */}
           {titleInfo && (
             <div style={{
               display: 'inline-flex', alignItems: 'center', gap: '6px',
@@ -168,7 +168,7 @@ export default function MyPageScreen({ progress, getLevel, getLevelProgress, get
               borderTop: '1px solid rgba(255,255,255,0.15)',
               textAlign: 'center', fontSize: '13px', fontWeight: 800,
             }}>
-              👑 最高称号 AIアーキテクト 達成！
+              🏆 最高称号 AIマスター 達成！
             </div>
           )}
         </div>
@@ -181,7 +181,7 @@ export default function MyPageScreen({ progress, getLevel, getLevelProgress, get
           </div>
           <div className="stat-card">
             <div className="stat-number">{totalPct}%</div>
-            <div className="stat-label">総合達成率</div>
+            <div className="stat-label">コア修了率</div>
           </div>
           <div className="stat-card">
             <div className="stat-number">
@@ -195,7 +195,7 @@ export default function MyPageScreen({ progress, getLevel, getLevelProgress, get
           </div>
         </div>
 
-        {/* ===== 修了証ボタン ===== */}
+        {/* ===== 修了証・ポートフォリオ ===== */}
         <div style={{ marginBottom: '16px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
           <button
             style={{
@@ -211,8 +211,8 @@ export default function MyPageScreen({ progress, getLevel, getLevelProgress, get
             onClick={() => graduated && onNavigate && onNavigate('home', { type: 'roadmap' })}
           >
             <div style={{ fontSize: '24px', marginBottom: '4px' }}>{graduated ? '🎓' : '🔒'}</div>
-            <div>修了証を見る</div>
-            {!graduated && <div style={{ fontSize: '10px', marginTop: '2px', opacity: 0.7 }}>全コース修了で解放</div>}
+            <div>認定証を見る</div>
+            {!graduated && <div style={{ fontSize: '10px', marginTop: '2px', opacity: 0.7 }}>コア修了で解放</div>}
           </button>
 
           <div style={{
@@ -227,7 +227,7 @@ export default function MyPageScreen({ progress, getLevel, getLevelProgress, get
           </div>
         </div>
 
-        {/* ===== 卒業制作ステータスカード ===== */}
+        {/* ===== 卒業制作ステータス ===== */}
         <div className="card" style={{ marginBottom: '16px', border: '1.5px solid rgba(234,179,8,0.25)' }}>
           <div style={{
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -263,53 +263,12 @@ export default function MyPageScreen({ progress, getLevel, getLevelProgress, get
             background: 'rgba(234,179,8,0.06)', border: '1px solid rgba(234,179,8,0.2)',
             borderRadius: '10px', padding: '10px',
           }}>
-            <div style={{ fontSize: '11px', color: '#92400e', fontWeight: 700, marginBottom: '3px' }}>
-              🏆 卒業判定
-            </div>
+            <div style={{ fontSize: '11px', color: '#92400e', fontWeight: 700, marginBottom: '3px' }}>🏆 卒業判定</div>
             <div style={{ fontSize: '13px', fontWeight: 700, color: '#94a3b8' }}>未認定</div>
           </div>
-
-          <div style={{
-            marginTop: '10px', background: '#f8fafc', borderRadius: '10px', padding: '10px',
-            fontSize: '12px', color: '#64748b', lineHeight: 1.7,
-          }}>
-            卒業制作を完成・提出することで認定証が発行されます
-          </div>
         </div>
 
-        {/* ===== Course Progress ===== */}
-        <div style={{ marginBottom: '12px' }}>
-          <div className="section-title" style={{ marginBottom: '10px' }}>📚 コース別進捗</div>
-          {COURSE_CARDS.map((c) => {
-            const done = doneCounts[c.key];
-            const pct = Math.round((done / c.total) * 100);
-            return (
-              <div key={c.key} className="card" style={{ marginBottom: '10px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
-                  <div style={{
-                    width: '40px', height: '40px', borderRadius: '10px',
-                    background: c.colorBg,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: '20px', flexShrink: 0,
-                  }}>{c.icon}</div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 700, fontSize: '14px', color: '#1e293b' }}>{c.label}</div>
-                    <div style={{ fontSize: '12px', color: '#94a3b8' }}>{c.desc}</div>
-                  </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: '26px', fontWeight: 900, color: c.color, lineHeight: 1 }}>{pct}%</div>
-                    <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 600 }}>{done} / {c.total}</div>
-                  </div>
-                </div>
-                <div style={{ height: '6px', borderRadius: '99px', background: '#e2e8f0', overflow: 'hidden' }}>
-                  <div style={{ height: '100%', borderRadius: '99px', background: c.color, width: `${pct}%`, transition: 'width 0.5s ease' }} />
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* ===== 8ステージ ロードマップ チェックリスト ===== */}
+        {/* ===== ロードマップ進捗チェックリスト ===== */}
         <div style={{ marginBottom: '16px' }}>
           <div className="section-title" style={{ marginBottom: '10px' }}>🗺️ ロードマップ進捗</div>
           <div className="card">
@@ -357,10 +316,7 @@ export default function MyPageScreen({ progress, getLevel, getLevelProgress, get
                     </div>
                     {isCore && (
                       <div style={{ marginTop: '4px' }}>
-                        <div style={{
-                          height: '4px', borderRadius: '99px', background: '#e2e8f0', overflow: 'hidden',
-                          width: '100%',
-                        }}>
+                        <div style={{ height: '4px', borderRadius: '99px', background: '#e2e8f0', overflow: 'hidden' }}>
                           <div style={{
                             height: '100%', borderRadius: '99px', background: stage.color,
                             width: `${Math.round((done / total) * 100)}%`,
@@ -381,7 +337,7 @@ export default function MyPageScreen({ progress, getLevel, getLevelProgress, get
                       <span style={{
                         fontSize: '10px', fontWeight: 700, padding: '2px 6px', borderRadius: '6px',
                         background: '#f1f5f9', color: '#94a3b8',
-                      }}>準備中</span>
+                      }}>🗺️ 公開中</span>
                     )}
                   </div>
                 </div>
@@ -390,17 +346,49 @@ export default function MyPageScreen({ progress, getLevel, getLevelProgress, get
           </div>
         </div>
 
+        {/* ===== Course Progress ===== */}
+        <div style={{ marginBottom: '12px' }}>
+          <div className="section-title" style={{ marginBottom: '10px' }}>📚 コース別進捗</div>
+          {COURSE_CARDS.map((c) => {
+            const done = doneCounts[c.key];
+            const pct = Math.round((done / c.total) * 100);
+            return (
+              <div key={c.key} className="card" style={{ marginBottom: '10px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                  <div style={{
+                    width: '40px', height: '40px', borderRadius: '10px',
+                    background: c.colorBg,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: '20px', flexShrink: 0,
+                  }}>{c.icon}</div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: 700, fontSize: '14px', color: '#1e293b' }}>{c.label}</div>
+                    <div style={{ fontSize: '12px', color: '#94a3b8' }}>{c.desc}</div>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: '26px', fontWeight: 900, color: c.color, lineHeight: 1 }}>{pct}%</div>
+                    <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 600 }}>{done} / {c.total}</div>
+                  </div>
+                </div>
+                <div style={{ height: '6px', borderRadius: '99px', background: '#e2e8f0', overflow: 'hidden' }}>
+                  <div style={{ height: '100%', borderRadius: '99px', background: c.color, width: `${pct}%`, transition: 'width 0.5s ease' }} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
         {/* ===== Total Progress ===== */}
         <div className="card" style={{ marginBottom: '16px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-            <span style={{ fontWeight: 700, fontSize: '14px' }}>🎯 総合進捗</span>
+            <span style={{ fontWeight: 700, fontSize: '14px' }}>🎯 コア修了率</span>
             <span style={{ fontWeight: 900, fontSize: '18px', color: '#6366f1' }}>{totalPct}%</span>
           </div>
           <div className="progress-bar-outer">
             <div className="progress-bar-inner" style={{ width: `${totalPct}%` }} />
           </div>
           <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '8px' }}>
-            {totalCompleted} / 42 コンテンツ完了（初級12・中級12・上級12・ミッション6）
+            {totalCompleted} / 42 コンテンツ完了（基礎12・活用12・開発12・実践6）
           </div>
         </div>
 
@@ -423,12 +411,12 @@ export default function MyPageScreen({ progress, getLevel, getLevelProgress, get
           </div>
         )}
 
-        {/* ===== Badges ===== */}
+        {/* ===== バッジコレクション（7種） ===== */}
         <div style={{ marginBottom: '16px' }}>
           <div className="section-title">🏅 バッジコレクション</div>
           <div className="card">
             <div className="badge-grid">
-              {ALL_BADGES.map((badge) => {
+              {MAIN_BADGES.map((badge) => {
                 const earned = progress.badges.includes(badge.id);
                 return (
                   <div key={badge.id} className="badge-item">
@@ -446,12 +434,12 @@ export default function MyPageScreen({ progress, getLevel, getLevelProgress, get
               })}
             </div>
             <div style={{ textAlign: 'center', fontSize: '12px', color: '#94a3b8', marginTop: '12px' }}>
-              {progress.badges.length} / {ALL_BADGES.length} バッジ獲得
+              {MAIN_BADGE_IDS.filter((id) => progress.badges.includes(id)).length} / {MAIN_BADGES.length} バッジ獲得
             </div>
           </div>
         </div>
 
-        {/* ===== 称号ガイド (expanded) ===== */}
+        {/* ===== 称号ガイド（7段階） ===== */}
         <div style={{ marginBottom: '16px' }}>
           <div className="section-title">🏆 称号ガイド</div>
           <div className="card">
@@ -483,42 +471,6 @@ export default function MyPageScreen({ progress, getLevel, getLevelProgress, get
           </div>
         </div>
 
-        {/* ===== Level Guide (game level) ===== */}
-        <div style={{ marginBottom: '16px' }}>
-          <div className="section-title">🗺️ ゲームレベルガイド</div>
-          <div className="card">
-            {[
-              { level: 1, name: 'AI初心者',    emoji: '🎮', xp: '0〜149' },
-              { level: 2, name: 'AI見習い',    emoji: '🌱', xp: '150〜399' },
-              { level: 3, name: 'AIビギナー',  emoji: '⭐', xp: '400〜699' },
-              { level: 4, name: 'AI活用者',    emoji: '🚀', xp: '700〜999' },
-              { level: 5, name: 'AI実践者',    emoji: '🏆', xp: '1000〜1499' },
-              { level: 6, name: 'AIクリエイター', emoji: '🎨', xp: '1500〜1999' },
-              { level: 7, name: 'AI個人開発者', emoji: '👑', xp: '2000〜' },
-            ].map((l) => (
-              <div key={l.level} style={{
-                display: 'flex', alignItems: 'center', gap: '12px',
-                padding: '10px 0', borderBottom: '1px solid #f1f5f9',
-                opacity: levelInfo.level >= l.level ? 1 : 0.4,
-              }}>
-                <span style={{ fontSize: '24px', width: '32px', textAlign: 'center' }}>{l.emoji}</span>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 700, fontSize: '14px' }}>Lv.{l.level} {l.name}</div>
-                  <div style={{ fontSize: '12px', color: '#94a3b8' }}>{l.xp} XP</div>
-                </div>
-                {levelInfo.level > l.level && (
-                  <span style={{ color: '#10b981', fontWeight: 700, fontSize: '14px' }}>✓ 達成</span>
-                )}
-                {levelInfo.level === l.level && (
-                  <span style={{ background: 'rgba(99,102,241,0.1)', color: '#6366f1', fontSize: '11px', fontWeight: 700, padding: '2px 8px', borderRadius: '6px' }}>
-                    現在
-                  </span>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-
         {/* ===== Memos ===== */}
         {memoEntries.length > 0 && (
           <div style={{ marginBottom: '16px' }}>
@@ -541,7 +493,7 @@ export default function MyPageScreen({ progress, getLevel, getLevelProgress, get
         {/* ===== Version + Reset ===== */}
         <div className="card" style={{ marginBottom: '16px', textAlign: 'center' }}>
           <div style={{ fontSize: '13px', color: '#64748b', lineHeight: 1.8 }}>
-            <div style={{ fontWeight: 700, color: '#1e293b', marginBottom: '4px' }}>🤖 AIスクール Ver.0.4.0</div>
+            <div style={{ fontWeight: 700, color: '#1e293b', marginBottom: '4px' }}>🤖 AIスクール Ver.0.5.0</div>
             <div>更新日：2026/06/27</div>
             <div style={{ marginTop: '8px', fontSize: '12px' }}>AIを武器に人生・仕事・ビジネスを変えるスクール</div>
           </div>

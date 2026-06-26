@@ -14,18 +14,20 @@ const INITIAL_STATE = {
   quizResults: {},
 };
 
+// hidden: true のバッジはUIに表示しない（LocalStorage互換のために残す）
 const BADGES = {
-  // 学習進捗バッジ
-  first_lesson:      { emoji: '🎓', name: 'はじめての学習',    desc: '初レッスン完了' },
-  three_lessons:     { emoji: '🌟', name: '3レッスン完了',     desc: 'レッスン3個達成' },
-  first_mission:     { emoji: '⚡', name: '初ミッション完了',  desc: '初ミッション達成' },
-  ai_doctor:         { emoji: '🏆', name: 'AIツール博士',      desc: 'レッスン5個達成' },
-  // コース修了バッジ
-  beginner_complete: { emoji: '📗', name: '初級コース修了',    desc: '初級12レッスン完了' },
-  advanced_complete: { emoji: '📘', name: '中級コース修了',    desc: '中級12レッスン完了' },
-  expert_complete:   { emoji: '📙', name: '上級コース修了',    desc: '上級12レッスン完了' },
-  // 卒業バッジ
-  all_graduate:      { emoji: '👑', name: 'AIスクール卒業',    desc: '全コース・全ミッション完了' },
+  first_lesson:          { emoji: '⭐', name: 'はじめての一歩',   desc: '初レッスン完了',    hidden: true },
+  three_lessons:         { emoji: '🌟', name: '3レッスン達成',    desc: '3レッスン完了',     hidden: true },
+  first_mission:         { emoji: '⚡', name: '初実践クリア',     desc: '初ミッション達成',   hidden: true },
+  ai_doctor:             { emoji: '🔍', name: 'AI探求者',        desc: '5レッスン達成',     hidden: true },
+  // メインバッジ（表示する7種）
+  beginner_complete:     { emoji: '📗', name: '基礎修了',         desc: '基礎編 全レッスン完了' },
+  advanced_complete:     { emoji: '📘', name: '活用修了',         desc: '活用編 全レッスン完了' },
+  expert_complete:       { emoji: '📙', name: '開発修了',         desc: '開発編 全レッスン完了' },
+  practice_complete:     { emoji: '⚡', name: '実践修了',         desc: '実践編 全ミッション完了' },
+  monetization_complete: { emoji: '💰', name: '収益化修了',       desc: '収益化編 全レッスン完了' },
+  graduation_submitted:  { emoji: '🎓', name: '卒業制作提出',     desc: '卒業制作を完成・提出' },
+  all_graduate:          { emoji: '👑', name: 'AIスクール修了',   desc: '基礎〜実践を全て修了' },
 };
 
 export const BADGE_DEFS = BADGES;
@@ -92,7 +94,7 @@ export function useProgress() {
     }
 
     update({ ...progress, completedLessons: newLessons, xp: newXp, badges: allBadges });
-    return { xp: 50, newBadges };
+    return { xp: 50, newBadges: newBadges.filter((b) => !BADGES[b]?.hidden) };
   }
 
   function completeMission(missionId) {
@@ -102,6 +104,11 @@ export function useProgress() {
     const newXp = progress.xp + 100;
     const newBadges = detectProgressBadges(progress.badges, progress.completedLessons, newMissions);
     const allBadges = [...progress.badges, ...newBadges];
+
+    if (newMissions.length >= 6 && !allBadges.includes('practice_complete')) {
+      newBadges.push('practice_complete');
+      allBadges.push('practice_complete');
+    }
 
     const expertDone = (progress.completedExpertLessons || []).length;
     if (progress.completedLessons.length >= 12 &&
@@ -114,7 +121,7 @@ export function useProgress() {
     }
 
     update({ ...progress, completedMissions: newMissions, xp: newXp, badges: allBadges });
-    return { xp: 100, newBadges };
+    return { xp: 100, newBadges: newBadges.filter((b) => !BADGES[b]?.hidden) };
   }
 
   function saveMemo(missionId, memo) {
@@ -202,7 +209,7 @@ export function useProgress() {
   }
 
   function getTotalProgress() {
-    // 12 beginner + 12 advanced + 12 expert + 6 missions = 42
+    // 12 基礎 + 12 活用 + 12 開発 + 6 実践 = 42
     const total = 42;
     const completed =
       progress.completedLessons.length +
@@ -237,16 +244,16 @@ export function useProgress() {
     );
   }
 
+  // 7段階の称号（XPベース）
   function getTitle() {
     const xp = progress.xp;
-    if (xp >= 4000) return { title: 'AIアーキテクト', displayLevel: 60, emoji: '👑' };
-    if (xp >= 3000) return { title: 'AIマスター',     displayLevel: 50, emoji: '🏆' };
-    if (xp >= 2000) return { title: 'AIスペシャリスト', displayLevel: 40, emoji: '🔥' };
-    if (xp >= 1500) return { title: 'AIエンジニア',   displayLevel: 30, emoji: '⚙️' };
-    if (xp >= 1000) return { title: 'AIデベロッパー', displayLevel: 20, emoji: '🚀' };
-    if (xp >= 500)  return { title: 'AIクリエイター', displayLevel: 10, emoji: '✨' };
-    if (xp >= 150)  return { title: 'AI活用者',       displayLevel: 5,  emoji: '🌱' };
-    return              { title: 'AI初心者',       displayLevel: 1,  emoji: '🎮' };
+    if (xp >= 3000) return { title: 'AIマスター',          displayLevel: 50, emoji: '🏆' };
+    if (xp >= 2000) return { title: 'AI個人開発者',        displayLevel: 40, emoji: '👑' };
+    if (xp >= 1500) return { title: 'AIビジネス実践者',    displayLevel: 30, emoji: '💰' };
+    if (xp >= 1000) return { title: 'AIデベロッパー',      displayLevel: 20, emoji: '🚀' };
+    if (xp >= 500)  return { title: 'AIクリエイター',      displayLevel: 10, emoji: '✨' };
+    if (xp >= 150)  return { title: 'AI活用者',            displayLevel: 5,  emoji: '🌱' };
+    return              { title: 'AI初心者',           displayLevel: 1,  emoji: '🎮' };
   }
 
   return {

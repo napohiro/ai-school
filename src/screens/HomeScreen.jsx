@@ -3,8 +3,6 @@ import { SPECIAL_LECTURES } from '../data/specialLectures';
 
 const FEATURED_LECTURES = SPECIAL_LECTURES.slice(0, 3);
 
-const NEW_COURSES = COURSES.filter((c) => ['professional', 'business', 'startup', 'graduation'].includes(c.id));
-
 function getDoneCount(courseId, progress) {
   switch (courseId) {
     case 'beginner':  return progress.completedLessons.length;
@@ -17,16 +15,14 @@ function getDoneCount(courseId, progress) {
 
 function getCourseTotal(courseId) {
   switch (courseId) {
-    case 'beginner':  return 12;
-    case 'advanced':  return 12;
-    case 'expert':    return 12;
+    case 'beginner': case 'advanced': case 'expert': return 12;
     case 'practice':  return 6;
     default:          return 0;
   }
 }
 
 function getRoadmapStatus(courseId, progress) {
-  if (['professional', 'business', 'startup', 'graduation'].includes(courseId)) return 'future';
+  if (['monetization', 'graduation'].includes(courseId)) return 'future';
   const done = getDoneCount(courseId, progress);
   const total = getCourseTotal(courseId);
   if (done >= total) return 'completed';
@@ -79,12 +75,19 @@ export default function HomeScreen({
 
   const primaryLesson = nextLesson || nextAdvancedLesson || nextExpertLesson;
   const primaryCourse = nextLesson
-    ? { name: '初級コース', icon: '📗', color: '#3b82f6', pct: beginnerPct, done: beginnerDone, type: 'lesson', tabType: 'beginner' }
+    ? { name: '基礎', icon: '📗', color: '#3b82f6', pct: beginnerPct, done: beginnerDone, type: 'lesson', tabType: 'beginner', max: 12 }
     : nextAdvancedLesson
-    ? { name: '中級コース', icon: '📘', color: '#10b981', pct: advancedPct, done: advancedDone, type: 'advancedLesson', tabType: 'advanced' }
+    ? { name: '活用', icon: '📘', color: '#10b981', pct: advancedPct, done: advancedDone, type: 'advancedLesson', tabType: 'advanced', max: 12 }
     : nextExpertLesson
-    ? { name: '上級コース', icon: '📙', color: '#8b5cf6', pct: expertPct, done: expertDone, type: 'expertLesson', tabType: 'expert' }
+    ? { name: '開発', icon: '📙', color: '#8b5cf6', pct: expertPct, done: expertDone, type: 'expertLesson', tabType: 'expert', max: 12 }
     : null;
+
+  const stageIdx = ROADMAP_STAGES.findIndex((s) => s.id === currentCourse);
+  const currentStage = ROADMAP_STAGES[stageIdx] || ROADMAP_STAGES[0];
+  const nextStage = ROADMAP_STAGES[stageIdx + 1];
+  const doneCurrent = getDoneCount(currentCourse, progress);
+  const totalCurrent = getCourseTotal(currentCourse);
+  const pctCurrent = totalCurrent > 0 ? Math.round((doneCurrent / totalCurrent) * 100) : 0;
 
   return (
     <div>
@@ -95,7 +98,6 @@ export default function HomeScreen({
           <p>AIを武器に人生・仕事・ビジネスを変えるスクール</p>
 
           <div className="progress-card">
-            {/* Title badge */}
             {titleInfo && (
               <div style={{
                 display: 'inline-flex', alignItems: 'center', gap: '6px',
@@ -128,12 +130,10 @@ export default function HomeScreen({
         </div>
       </div>
 
-      {/* ===== 全体ロードマップ（横スクロール） ===== */}
+      {/* ===== 学習ロードマップ（横スクロール） ===== */}
       <div style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0', padding: '14px 16px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-          <div style={{ fontSize: '12px', fontWeight: 800, color: '#94a3b8' }}>
-            🗺️ 学習ロードマップ
-          </div>
+          <div style={{ fontSize: '12px', fontWeight: 800, color: '#94a3b8' }}>🗺️ 学習ロードマップ</div>
           <button
             onClick={() => onNavigate('home', { type: 'roadmap' })}
             style={{
@@ -142,11 +142,11 @@ export default function HomeScreen({
               fontSize: '11px', fontWeight: 700, cursor: 'pointer',
             }}
           >
-            全ロードマップ ›
+            詳細を見る ›
           </button>
         </div>
 
-        {/* Horizontal scroll roadmap - all 8 stages */}
+        {/* 6ステージ横スクロール */}
         <div style={{
           display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '4px',
           scrollbarWidth: 'none', msOverflowStyle: 'none',
@@ -160,23 +160,18 @@ export default function HomeScreen({
             const isFuture = status === 'future';
 
             return (
-              <div
-                key={stage.id}
-                style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}
-              >
+              <div key={stage.id} style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
                 {idx > 0 && (
                   <div style={{ color: '#cbd5e1', fontSize: '12px', marginRight: '6px' }}>›</div>
                 )}
                 <div
                   onClick={() => {
-                    if (stage.id === 'practice') {
-                      onNavigate('practice');
-                    } else if (!isFuture) {
-                      onNavigate('learning', { type: stage.id + 'Tab' });
-                    }
+                    if (isFuture) return;
+                    if (stage.id === 'practice') { onNavigate('practice'); return; }
+                    onNavigate('learning', { type: stage.id + 'Tab' });
                   }}
                   style={{
-                    minWidth: '68px',
+                    minWidth: '64px',
                     background: isActive ? stage.color : isComplete ? `${stage.color}20` : isFuture ? '#f1f5f9' : 'white',
                     border: `2px solid ${isActive ? stage.color : isComplete ? `${stage.color}60` : isFuture ? '#e2e8f0' : '#e2e8f0'}`,
                     borderRadius: '12px', padding: '8px 6px',
@@ -192,7 +187,7 @@ export default function HomeScreen({
                   }}>
                     {stage.label}
                   </div>
-                  {!isFuture && (
+                  {!isFuture && total > 0 && (
                     <div style={{
                       fontSize: '9px',
                       color: isActive ? 'rgba(255,255,255,0.8)' : '#94a3b8',
@@ -202,7 +197,7 @@ export default function HomeScreen({
                     </div>
                   )}
                   {isFuture && (
-                    <div style={{ fontSize: '9px', color: '#cbd5e1', marginTop: '1px' }}>🗺️公開中</div>
+                    <div style={{ fontSize: '9px', color: '#cbd5e1', marginTop: '1px' }}>🗺️</div>
                   )}
                 </div>
               </div>
@@ -210,10 +205,10 @@ export default function HomeScreen({
           })}
         </div>
 
-        {/* Graduation progress */}
+        {/* 総合進捗 */}
         <div style={{ marginTop: '12px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#94a3b8', marginBottom: '4px' }}>
-            <span>卒業までの進捗（初級〜実践）</span>
+            <span>コア修了進捗（基礎〜実践）</span>
             <span style={{ fontWeight: 700, color: '#6366f1' }}>{totalPct}%</span>
           </div>
           <div style={{ height: '4px', borderRadius: '99px', background: '#e2e8f0', overflow: 'hidden' }}>
@@ -239,7 +234,7 @@ export default function HomeScreen({
                 {primaryCourse.icon} {primaryCourse.name}
               </span>
               <span style={{ background: '#f1f5f9', color: '#64748b', padding: '3px 10px', borderRadius: '20px', fontSize: '12px', fontWeight: 600 }}>
-                {primaryCourse.done} / 12
+                {primaryCourse.done} / {primaryCourse.max}
               </span>
               <span style={{ marginLeft: 'auto', fontWeight: 800, color: primaryCourse.color, fontSize: '14px' }}>
                 {primaryCourse.pct}%
@@ -252,7 +247,7 @@ export default function HomeScreen({
                 <div style={{ fontWeight: 800, fontSize: '16px', marginBottom: '3px', color: '#1e293b' }}>
                   {primaryLesson.title}
                 </div>
-                <div style={{ fontSize: '13px', color: '#64748b', lineHeight: 1.5 }}>
+                <div style={{ fontSize: '13px', color: '#64748b' }}>
                   {primaryLesson.description}
                 </div>
               </div>
@@ -279,10 +274,10 @@ export default function HomeScreen({
           <div className="card" style={{ textAlign: 'center', padding: '24px' }}>
             <div style={{ fontSize: '48px', marginBottom: '12px' }}>🏆</div>
             <div style={{ fontWeight: 800, fontSize: '16px', color: '#10b981', marginBottom: '6px' }}>
-              全レッスン完了！おめでとう！
+              コアレッスン完了！おめでとう！
             </div>
             <div style={{ fontSize: '13px', color: '#64748b' }}>
-              次はプロフェッショナルコースに挑戦しよう
+              次は収益化編や卒業制作に挑戦しよう
             </div>
           </div>
         )}
@@ -290,85 +285,75 @@ export default function HomeScreen({
 
       {/* ===== 今のあなたのステージ ===== */}
       <div className="section" style={{ paddingTop: '20px' }}>
-        <div className="section-title">📍 今のあなたのステージ</div>
+        <div className="section-title">📍 現在のステージ</div>
 
-        {(() => {
-          const stageIdx = ROADMAP_STAGES.findIndex((s) => s.id === currentCourse);
-          const currentStage = ROADMAP_STAGES[stageIdx] || ROADMAP_STAGES[0];
-          const nextStage = ROADMAP_STAGES[stageIdx + 1];
-          const doneCurrent = getDoneCount(currentCourse, progress);
-          const totalCurrent = getCourseTotal(currentCourse);
-          const pctCurrent = totalCurrent > 0 ? Math.round((doneCurrent / totalCurrent) * 100) : 0;
+        <div className="card" style={{
+          background: `linear-gradient(135deg, ${currentStage.color}08 0%, white 100%)`,
+          border: `1.5px solid ${currentStage.color}30`,
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+            <div style={{
+              width: '52px', height: '52px', borderRadius: '14px',
+              background: `${currentStage.color}15`, fontSize: '26px',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              border: `2px solid ${currentStage.color}30`, flexShrink: 0,
+            }}>{currentStage.emoji}</div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: '11px', fontWeight: 700, color: currentStage.color, letterSpacing: '1px', marginBottom: '2px' }}>
+                STAGE {stageIdx + 1} / {ROADMAP_STAGES.length}
+              </div>
+              <div style={{ fontSize: '17px', fontWeight: 900, color: '#1e293b' }}>
+                {currentStage.label}
+              </div>
+              <div style={{ fontSize: '12px', color: '#64748b' }}>
+                {totalCurrent > 0 ? `${doneCurrent} / ${totalCurrent} 完了` : 'ロードマップ公開中'}
+              </div>
+            </div>
+            <div style={{
+              fontSize: '20px', fontWeight: 900, color: currentStage.color,
+              background: `${currentStage.color}10`, borderRadius: '12px',
+              padding: '6px 10px', flexShrink: 0,
+            }}>{pctCurrent}%</div>
+          </div>
 
-          return (
-            <div className="card" style={{
-              background: `linear-gradient(135deg, ${currentStage.color}08 0%, white 100%)`,
-              border: `1.5px solid ${currentStage.color}30`,
-              marginBottom: '10px',
+          {totalCurrent > 0 && (
+            <div style={{ marginBottom: '12px' }}>
+              <div style={{ height: '7px', borderRadius: '99px', background: '#e2e8f0', overflow: 'hidden' }}>
+                <div style={{ height: '100%', borderRadius: '99px', background: currentStage.color, width: `${pctCurrent}%`, transition: 'width 0.5s ease' }} />
+              </div>
+            </div>
+          )}
+
+          {nextStage && (
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: '8px',
+              background: '#f8fafc', borderRadius: '10px', padding: '10px',
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px' }}>
-                <div style={{
-                  width: '56px', height: '56px', borderRadius: '16px',
-                  background: `${currentStage.color}15`, fontSize: '28px',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  border: `2px solid ${currentStage.color}30`, flexShrink: 0,
-                }}>{currentStage.emoji}</div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '11px', fontWeight: 700, color: currentStage.color, letterSpacing: '1px', marginBottom: '2px' }}>
-                    STAGE {stageIdx + 1} / 8
-                  </div>
-                  <div style={{ fontSize: '17px', fontWeight: 900, color: '#1e293b' }}>
-                    {currentStage.label}コース
-                  </div>
-                  <div style={{ fontSize: '12px', color: '#64748b' }}>
-                    {doneCurrent} / {totalCurrent} 完了
-                  </div>
-                </div>
-                <div style={{
-                  fontSize: '22px', fontWeight: 900, color: currentStage.color,
-                  background: `${currentStage.color}10`, borderRadius: '12px',
-                  padding: '8px 12px', flexShrink: 0,
-                }}>{pctCurrent}%</div>
-              </div>
-
-              <div style={{ marginBottom: '12px' }}>
-                <div style={{ height: '8px', borderRadius: '99px', background: '#e2e8f0', overflow: 'hidden' }}>
-                  <div style={{ height: '100%', borderRadius: '99px', background: currentStage.color, width: `${pctCurrent}%`, transition: 'width 0.5s ease' }} />
-                </div>
-              </div>
-
-              {nextStage && (
-                <div style={{
-                  display: 'flex', alignItems: 'center', gap: '8px',
-                  background: '#f8fafc', borderRadius: '10px', padding: '10px',
-                }}>
-                  <span style={{ fontSize: '14px', color: '#94a3b8' }}>次のステージ</span>
-                  <span style={{ fontSize: '14px' }}>{nextStage.emoji}</span>
-                  <span style={{ fontSize: '13px', fontWeight: 700, color: '#1e293b' }}>{nextStage.label}</span>
-                  <span style={{ marginLeft: 'auto', fontSize: '12px', fontWeight: 700, color: nextStage.color }}>
-                    解放まで残り{totalCurrent - doneCurrent}本
-                  </span>
-                </div>
+              <span style={{ fontSize: '13px', color: '#94a3b8' }}>次のステージ</span>
+              <span style={{ fontSize: '14px' }}>{nextStage.emoji}</span>
+              <span style={{ fontSize: '13px', fontWeight: 700, color: '#1e293b' }}>{nextStage.label}</span>
+              {totalCurrent > 0 && (
+                <span style={{ marginLeft: 'auto', fontSize: '12px', fontWeight: 700, color: nextStage.color }}>
+                  残り{totalCurrent - doneCurrent}本で解放
+                </span>
               )}
             </div>
-          );
-        })()}
+          )}
+        </div>
       </div>
 
       {/* Stats Row */}
       <div className="section" style={{ paddingTop: '16px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '8px' }}>
           {[
-            { label: '初級', value: beginnerDone, max: 12, icon: '📗', color: '#3b82f6' },
-            { label: '中級', value: advancedDone, max: 12, icon: '📘', color: '#10b981' },
-            { label: '上級', value: expertDone,   max: 12, icon: '📙', color: '#8b5cf6' },
+            { label: '基礎', value: beginnerDone, max: 12, icon: '📗', color: '#3b82f6' },
+            { label: '活用', value: advancedDone, max: 12, icon: '📘', color: '#10b981' },
+            { label: '開発', value: expertDone,   max: 12, icon: '📙', color: '#8b5cf6' },
             { label: '実践', value: missionDone,  max: 6,  icon: '⚡', color: '#f59e0b' },
           ].map((item) => (
             <div key={item.label} className="card" style={{ textAlign: 'center', padding: '10px 4px' }}>
               <div style={{ fontSize: '18px', marginBottom: '3px' }}>{item.icon}</div>
-              <div style={{ fontSize: '18px', fontWeight: 900, color: item.color }}>
-                {item.value}
-              </div>
+              <div style={{ fontSize: '18px', fontWeight: 900, color: item.color }}>{item.value}</div>
               <div style={{ fontSize: '9px', color: '#94a3b8', fontWeight: 600, marginTop: '1px' }}>
                 / {item.max} {item.label}
               </div>
@@ -381,28 +366,27 @@ export default function HomeScreen({
       <div className="section" style={{ paddingTop: '12px' }}>
         <div className="card">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-            <span style={{ fontSize: '14px', fontWeight: 700 }}>📊 総合達成率</span>
+            <span style={{ fontSize: '14px', fontWeight: 700 }}>📊 コア修了率</span>
             <span style={{ fontSize: '14px', fontWeight: 800, color: '#6366f1' }}>{totalPct}%</span>
           </div>
           <div className="progress-bar-outer">
             <div className="progress-bar-inner" style={{ width: `${totalPct}%` }} />
           </div>
           <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '8px' }}>
-            {completedCount} / 42 コンテンツ完了（初級12・中級12・上級12・ミッション6）
+            {completedCount} / 42 コンテンツ完了（基礎12・活用12・開発12・実践6）
           </div>
         </div>
       </div>
 
-      {/* ===== 次のステージへ（AI個人開発者への道） ===== */}
+      {/* ===== 収益化編・卒業制作 ===== */}
       <div className="section" style={{ paddingTop: '20px' }}>
         <div className="section-title">🚀 次のステージへ</div>
 
-        {/* AI個人開発者への道 カード */}
         <div
           className="card card-hover"
           style={{
             background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
-            border: 'none', marginBottom: '12px', color: 'white',
+            border: 'none', marginBottom: '10px', color: 'white',
           }}
           onClick={() => onNavigate('home', { type: 'roadmap' })}
         >
@@ -414,20 +398,20 @@ export default function HomeScreen({
               fontSize: '28px', flexShrink: 0,
             }}>🗺️</div>
             <div style={{ flex: 1 }}>
-              <div style={{ fontWeight: 900, fontSize: '16px', marginBottom: '4px' }}>
-                AI個人開発者への道
-              </div>
+              <div style={{ fontWeight: 900, fontSize: '16px', marginBottom: '4px' }}>全体ロードマップ</div>
               <div style={{ fontSize: '12px', opacity: 0.75, lineHeight: 1.5 }}>
-                初級から卒業制作まで、8ステージの全体ロードマップを確認
+                基礎→活用→開発→実践→収益化→卒業制作の6ステージ
               </div>
             </div>
             <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: '20px' }}>›</span>
           </div>
         </div>
 
-        {/* New Course Cards */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-          {NEW_COURSES.map((course) => (
+          {[
+            { id: 'monetization', name: '収益化編', emoji: '💰', color: '#ec4899', sub: '副業・案件・起業', tabType: 'monetizationTab' },
+            { id: 'graduation',   name: '卒業制作', emoji: '🎓', color: '#eab308', sub: 'AIサービスを公開', tabType: 'graduationTab' },
+          ].map((course) => (
             <div
               key={course.id}
               className="card card-hover"
@@ -436,22 +420,19 @@ export default function HomeScreen({
                 border: `1.5px solid ${course.color}30`,
                 padding: '14px',
               }}
-              onClick={() => onNavigate('learning', { type: course.id + 'Tab' })}
+              onClick={() => onNavigate('learning', { type: course.tabType })}
             >
               <div style={{ fontSize: '28px', marginBottom: '8px' }}>{course.emoji}</div>
-              <div style={{ fontWeight: 800, fontSize: '13px', color: '#1e293b', marginBottom: '4px', lineHeight: 1.3 }}>
+              <div style={{ fontWeight: 800, fontSize: '14px', color: '#1e293b', marginBottom: '4px', lineHeight: 1.3 }}>
                 {course.name}
               </div>
-              <div style={{ fontSize: '11px', color: '#64748b', marginBottom: '8px', lineHeight: 1.4 }}>
-                {course.subtitle}
-              </div>
+              <div style={{ fontSize: '11px', color: '#64748b', marginBottom: '8px' }}>{course.sub}</div>
               <span style={{
                 display: 'inline-block',
                 fontSize: '10px', fontWeight: 700, padding: '3px 8px', borderRadius: '8px',
-                background: course.badgeStatus === 'recommended' ? `${course.color}20` : '#f1f5f9',
-                color: course.badgeStatus === 'recommended' ? course.color : '#94a3b8',
+                background: '#f1f5f9', color: '#94a3b8',
               }}>
-                {course.badgeStatus === 'recommended' ? '⭐ おすすめ' : '🗺️ ロードマップ公開中'}
+                🗺️ ロードマップ公開中
               </span>
             </div>
           ))}
@@ -484,10 +465,10 @@ export default function HomeScreen({
         </div>
       )}
 
-      {/* ===== 特別講座ピックアップ ===== */}
+      {/* 特別講座ピックアップ */}
       <div className="section" style={{ paddingTop: '20px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-          <div className="section-title" style={{ margin: 0 }}>⭐ 特別講座ピックアップ</div>
+          <div className="section-title" style={{ margin: 0 }}>⭐ 特別講座</div>
           <button
             onClick={() => onNavigate('learning', { type: 'specialTab' })}
             style={{
@@ -521,7 +502,7 @@ export default function HomeScreen({
                 <div style={{ fontWeight: 800, fontSize: '14px', color: '#1e293b', marginBottom: '3px' }}>
                   {lecture.name}
                 </div>
-                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', gap: '6px' }}>
                   <span style={{
                     fontSize: '10px', fontWeight: 700, padding: '2px 6px', borderRadius: '6px',
                     background: `${lecture.color}12`, color: lecture.color,
@@ -532,7 +513,7 @@ export default function HomeScreen({
                   }}>{lecture.difficulty}</span>
                 </div>
               </div>
-              <span style={{ color: `${lecture.color}`, fontSize: '18px', flexShrink: 0 }}>›</span>
+              <span style={{ color: lecture.color, fontSize: '18px', flexShrink: 0 }}>›</span>
             </div>
           </div>
         ))}
@@ -546,7 +527,7 @@ export default function HomeScreen({
             学習の進め方
           </div>
           <div style={{ fontSize: '13px', color: '#64748b', lineHeight: 1.7 }}>
-            ① 初級でAIの基礎を理解 → ② 中級でAIを仕事に活用 → ③ 上級でアプリを作る → ④ 実践で成果物を完成 → ⑤ プロ・ビジネス・起業で飛躍！
+            ① 基礎でAIを理解 → ② 活用で仕事に使う → ③ 開発でアプリを作る → ④ 実践で成果物を完成 → ⑤ 収益化で稼ぐ → ⑥ 卒業制作で完成！
           </div>
         </div>
       </div>

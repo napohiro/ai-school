@@ -129,14 +129,12 @@ export default function App() {
   }, []);
 
   function getLearningInitialTab() {
-    if (subScreen?.type === 'advancedTab')     return 'advanced';
-    if (subScreen?.type === 'expertTab')       return 'expert';
-    if (subScreen?.type === 'practiceTab')     return 'practice';
-    if (subScreen?.type === 'professionalTab') return 'professional';
-    if (subScreen?.type === 'businessTab')     return 'business';
-    if (subScreen?.type === 'startupTab')      return 'startup';
-    if (subScreen?.type === 'graduationTab')   return 'graduation';
-    if (subScreen?.type === 'specialTab')      return 'special';
+    if (subScreen?.type === 'advancedTab')      return 'advanced';
+    if (subScreen?.type === 'expertTab')        return 'expert';
+    if (subScreen?.type === 'practiceTab')      return 'practice';
+    if (subScreen?.type === 'monetizationTab')  return 'monetization';
+    if (subScreen?.type === 'graduationTab')    return 'graduation';
+    if (subScreen?.type === 'specialTab')       return 'special';
     return 'beginner';
   }
 
