@@ -1,4 +1,7 @@
 import { COURSES, ROADMAP_STAGES } from '../data/courses';
+import { SPECIAL_LECTURES } from '../data/specialLectures';
+
+const FEATURED_LECTURES = SPECIAL_LECTURES.slice(0, 3);
 
 const NEW_COURSES = COURSES.filter((c) => ['professional', 'business', 'startup', 'graduation'].includes(c.id));
 
@@ -199,7 +202,7 @@ export default function HomeScreen({
                     </div>
                   )}
                   {isFuture && (
-                    <div style={{ fontSize: '9px', color: '#cbd5e1', marginTop: '1px' }}>準備中</div>
+                    <div style={{ fontSize: '9px', color: '#cbd5e1', marginTop: '1px' }}>🗺️公開中</div>
                   )}
                 </div>
               </div>
@@ -283,6 +286,73 @@ export default function HomeScreen({
             </div>
           </div>
         )}
+      </div>
+
+      {/* ===== 今のあなたのステージ ===== */}
+      <div className="section" style={{ paddingTop: '20px' }}>
+        <div className="section-title">📍 今のあなたのステージ</div>
+
+        {(() => {
+          const stageIdx = ROADMAP_STAGES.findIndex((s) => s.id === currentCourse);
+          const currentStage = ROADMAP_STAGES[stageIdx] || ROADMAP_STAGES[0];
+          const nextStage = ROADMAP_STAGES[stageIdx + 1];
+          const doneCurrent = getDoneCount(currentCourse, progress);
+          const totalCurrent = getCourseTotal(currentCourse);
+          const pctCurrent = totalCurrent > 0 ? Math.round((doneCurrent / totalCurrent) * 100) : 0;
+
+          return (
+            <div className="card" style={{
+              background: `linear-gradient(135deg, ${currentStage.color}08 0%, white 100%)`,
+              border: `1.5px solid ${currentStage.color}30`,
+              marginBottom: '10px',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px' }}>
+                <div style={{
+                  width: '56px', height: '56px', borderRadius: '16px',
+                  background: `${currentStage.color}15`, fontSize: '28px',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  border: `2px solid ${currentStage.color}30`, flexShrink: 0,
+                }}>{currentStage.emoji}</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '11px', fontWeight: 700, color: currentStage.color, letterSpacing: '1px', marginBottom: '2px' }}>
+                    STAGE {stageIdx + 1} / 8
+                  </div>
+                  <div style={{ fontSize: '17px', fontWeight: 900, color: '#1e293b' }}>
+                    {currentStage.label}コース
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#64748b' }}>
+                    {doneCurrent} / {totalCurrent} 完了
+                  </div>
+                </div>
+                <div style={{
+                  fontSize: '22px', fontWeight: 900, color: currentStage.color,
+                  background: `${currentStage.color}10`, borderRadius: '12px',
+                  padding: '8px 12px', flexShrink: 0,
+                }}>{pctCurrent}%</div>
+              </div>
+
+              <div style={{ marginBottom: '12px' }}>
+                <div style={{ height: '8px', borderRadius: '99px', background: '#e2e8f0', overflow: 'hidden' }}>
+                  <div style={{ height: '100%', borderRadius: '99px', background: currentStage.color, width: `${pctCurrent}%`, transition: 'width 0.5s ease' }} />
+                </div>
+              </div>
+
+              {nextStage && (
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: '8px',
+                  background: '#f8fafc', borderRadius: '10px', padding: '10px',
+                }}>
+                  <span style={{ fontSize: '14px', color: '#94a3b8' }}>次のステージ</span>
+                  <span style={{ fontSize: '14px' }}>{nextStage.emoji}</span>
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: '#1e293b' }}>{nextStage.label}</span>
+                  <span style={{ marginLeft: 'auto', fontSize: '12px', fontWeight: 700, color: nextStage.color }}>
+                    解放まで残り{totalCurrent - doneCurrent}本
+                  </span>
+                </div>
+              )}
+            </div>
+          );
+        })()}
       </div>
 
       {/* Stats Row */}
@@ -381,7 +451,7 @@ export default function HomeScreen({
                 background: course.badgeStatus === 'recommended' ? `${course.color}20` : '#f1f5f9',
                 color: course.badgeStatus === 'recommended' ? course.color : '#94a3b8',
               }}>
-                {course.badgeStatus === 'recommended' ? '⭐ おすすめ' : '🔒 準備中'}
+                {course.badgeStatus === 'recommended' ? '⭐ おすすめ' : '🗺️ ロードマップ公開中'}
               </span>
             </div>
           ))}
@@ -413,6 +483,60 @@ export default function HomeScreen({
           </div>
         </div>
       )}
+
+      {/* ===== 特別講座ピックアップ ===== */}
+      <div className="section" style={{ paddingTop: '20px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+          <div className="section-title" style={{ margin: 0 }}>⭐ 特別講座ピックアップ</div>
+          <button
+            onClick={() => onNavigate('learning', { type: 'specialTab' })}
+            style={{
+              background: 'rgba(124,58,237,0.1)', border: 'none', color: '#7c3aed',
+              borderRadius: '8px', padding: '4px 10px', fontFamily: 'inherit',
+              fontSize: '11px', fontWeight: 700, cursor: 'pointer',
+            }}
+          >
+            全{SPECIAL_LECTURES.length}講座 ›
+          </button>
+        </div>
+        {FEATURED_LECTURES.map((lecture) => (
+          <div
+            key={lecture.id}
+            className="card card-hover"
+            style={{
+              marginBottom: '8px',
+              background: `linear-gradient(135deg, ${lecture.color}06 0%, white 100%)`,
+              border: `1.5px solid ${lecture.color}25`,
+            }}
+            onClick={() => onNavigate('learning', { type: 'specialTab' })}
+          >
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+              <div style={{
+                width: '44px', height: '44px', borderRadius: '12px',
+                background: `${lecture.color}15`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '22px', flexShrink: 0,
+              }}>{lecture.emoji}</div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontWeight: 800, fontSize: '14px', color: '#1e293b', marginBottom: '3px' }}>
+                  {lecture.name}
+                </div>
+                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                  <span style={{
+                    fontSize: '10px', fontWeight: 700, padding: '2px 6px', borderRadius: '6px',
+                    background: `${lecture.color}12`, color: lecture.color,
+                  }}>{lecture.category}</span>
+                  <span style={{
+                    fontSize: '10px', fontWeight: 600, padding: '2px 6px', borderRadius: '6px',
+                    background: '#f1f5f9', color: '#64748b',
+                  }}>{lecture.difficulty}</span>
+                </div>
+              </div>
+              <span style={{ color: `${lecture.color}`, fontSize: '18px', flexShrink: 0 }}>›</span>
+            </div>
+          </div>
+        ))}
+      </div>
 
       {/* Info Card */}
       <div className="section" style={{ paddingTop: '20px', paddingBottom: '20px' }}>

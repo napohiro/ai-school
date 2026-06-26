@@ -1,4 +1,5 @@
 import { BADGE_DEFS } from '../hooks/useProgress';
+import { ROADMAP_STAGES } from '../data/courses';
 
 const ALL_BADGES = Object.entries(BADGE_DEFS).map(([id, def]) => ({ id, ...def }));
 
@@ -10,14 +11,14 @@ const COURSE_CARDS = [
 ];
 
 const TITLE_GUIDE = [
-  { displayLevel: 1,  title: 'AI初心者',      emoji: '🎮', xp: '0〜149' },
-  { displayLevel: 5,  title: 'AI活用者',      emoji: '🌱', xp: '150〜499' },
-  { displayLevel: 10, title: 'AIクリエイター', emoji: '✨', xp: '500〜999' },
-  { displayLevel: 20, title: 'AIデベロッパー', emoji: '🚀', xp: '1000〜1499' },
-  { displayLevel: 30, title: 'AIエンジニア',  emoji: '⚙️', xp: '1500〜1999' },
-  { displayLevel: 40, title: 'AIスペシャリスト', emoji: '🔥', xp: '2000〜2999' },
-  { displayLevel: 50, title: 'AIマスター',    emoji: '🏆', xp: '3000〜3999' },
-  { displayLevel: 60, title: 'AIアーキテクト', emoji: '👑', xp: '4000〜' },
+  { displayLevel: 1,  title: 'AI初心者',      emoji: '🎮', xp: '0〜149',   minXp: 0,    nextXp: 150 },
+  { displayLevel: 5,  title: 'AI活用者',      emoji: '🌱', xp: '150〜499', minXp: 150,  nextXp: 500 },
+  { displayLevel: 10, title: 'AIクリエイター', emoji: '✨', xp: '500〜999', minXp: 500,  nextXp: 1000 },
+  { displayLevel: 20, title: 'AIデベロッパー', emoji: '🚀', xp: '1000〜1499', minXp: 1000, nextXp: 1500 },
+  { displayLevel: 30, title: 'AIエンジニア',  emoji: '⚙️', xp: '1500〜1999', minXp: 1500, nextXp: 2000 },
+  { displayLevel: 40, title: 'AIスペシャリスト', emoji: '🔥', xp: '2000〜2999', minXp: 2000, nextXp: 3000 },
+  { displayLevel: 50, title: 'AIマスター',    emoji: '🏆', xp: '3000〜3999', minXp: 3000, nextXp: 4000 },
+  { displayLevel: 60, title: 'AIアーキテクト', emoji: '👑', xp: '4000〜',  minXp: 4000, nextXp: null },
 ];
 
 const GRADUATION_SKILLS = [
@@ -31,6 +32,12 @@ export default function MyPageScreen({ progress, getLevel, getLevelProgress, get
   const levelPct = getLevelProgress();
   const totalPct = getTotalProgress();
   const graduated = isGraduated ? isGraduated() : false;
+
+  const currentTitleEntry = TITLE_GUIDE.find((t) => titleInfo && t.displayLevel === titleInfo.displayLevel);
+  const nextTitleEntry = currentTitleEntry?.nextXp
+    ? TITLE_GUIDE.find((t) => t.minXp === currentTitleEntry.nextXp)
+    : null;
+  const xpToNextTitle = currentTitleEntry?.nextXp ? currentTitleEntry.nextXp - progress.xp : null;
 
   const expertDone   = (progress.completedExpertLessons || []).length;
   const advancedDone = (progress.completedAdvancedLessons || []).length;
@@ -132,6 +139,38 @@ export default function MyPageScreen({ progress, getLevel, getLevelProgress, get
               Lv.{levelInfo.level + 1}まで {levelInfo.nextXp - progress.xp} XP
             </div>
           )}
+
+          {/* 次の称号まで */}
+          {nextTitleEntry && xpToNextTitle !== null && (
+            <div style={{
+              marginTop: '12px', paddingTop: '12px',
+              borderTop: '1px solid rgba(255,255,255,0.15)',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            }}>
+              <div>
+                <div style={{ fontSize: '11px', opacity: 0.75, marginBottom: '2px' }}>次の称号</div>
+                <div style={{ fontSize: '13px', fontWeight: 800 }}>
+                  {nextTitleEntry.emoji} {nextTitleEntry.title}（Lv.{nextTitleEntry.displayLevel}）
+                </div>
+              </div>
+              <div style={{
+                background: 'rgba(255,255,255,0.15)', borderRadius: '10px',
+                padding: '6px 12px', textAlign: 'center',
+              }}>
+                <div style={{ fontSize: '16px', fontWeight: 900 }}>{xpToNextTitle}</div>
+                <div style={{ fontSize: '10px', opacity: 0.8 }}>XP必要</div>
+              </div>
+            </div>
+          )}
+          {!nextTitleEntry && (
+            <div style={{
+              marginTop: '12px', paddingTop: '12px',
+              borderTop: '1px solid rgba(255,255,255,0.15)',
+              textAlign: 'center', fontSize: '13px', fontWeight: 800,
+            }}>
+              👑 最高称号 AIアーキテクト 達成！
+            </div>
+          )}
         </div>
 
         {/* ===== Quick Stats ===== */}
@@ -188,28 +227,53 @@ export default function MyPageScreen({ progress, getLevel, getLevelProgress, get
           </div>
         </div>
 
-        {/* ===== 卒業制作の状態 ===== */}
-        <div className="card" style={{ marginBottom: '16px' }}>
-          <div style={{ fontWeight: 800, fontSize: '14px', color: '#1e293b', marginBottom: '12px' }}>🎓 卒業制作</div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '12px' }}>
+        {/* ===== 卒業制作ステータスカード ===== */}
+        <div className="card" style={{ marginBottom: '16px', border: '1.5px solid rgba(234,179,8,0.25)' }}>
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            marginBottom: '12px', paddingBottom: '10px', borderBottom: '1px solid #f1f5f9',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '20px' }}>🎓</span>
+              <span style={{ fontWeight: 800, fontSize: '14px', color: '#1e293b' }}>卒業制作</span>
+            </div>
+            <span style={{
+              fontSize: '11px', fontWeight: 700, padding: '3px 8px', borderRadius: '8px',
+              background: '#f1f5f9', color: '#94a3b8',
+            }}>未認定</span>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '10px' }}>
             {[
-              { label: '修了者名',   value: 'ゲストユーザー', color: '#1e293b' },
-              { label: '認定名',     value: 'AIクリエイター',   color: '#6366f1' },
-              { label: '卒業制作',   value: '未提出',           color: '#94a3b8' },
-              { label: '公開URL',   value: '未登録',           color: '#94a3b8' },
+              { label: '作品名',   value: '未登録', icon: '📛' },
+              { label: '公開URL',  value: '未登録', icon: '🌐' },
+              { label: 'GitHub',  value: '未登録', icon: '🐙' },
+              { label: '制作状況', value: '未提出', icon: '📋' },
             ].map((item) => (
               <div key={item.label} style={{ background: '#f8fafc', borderRadius: '10px', padding: '10px' }}>
-                <div style={{ fontSize: '10px', color: '#94a3b8', fontWeight: 600, marginBottom: '3px' }}>{item.label}</div>
-                <div style={{ fontSize: '13px', fontWeight: 700, color: item.color }}>{item.value}</div>
+                <div style={{ fontSize: '10px', color: '#94a3b8', fontWeight: 600, marginBottom: '3px' }}>
+                  {item.icon} {item.label}
+                </div>
+                <div style={{ fontSize: '13px', fontWeight: 700, color: '#94a3b8' }}>{item.value}</div>
               </div>
             ))}
           </div>
+
           <div style={{
-            background: 'rgba(99,102,241,0.05)', border: '1px solid rgba(99,102,241,0.15)',
-            borderRadius: '10px', padding: '12px',
-            fontSize: '12px', color: '#64748b', lineHeight: 1.6,
+            background: 'rgba(234,179,8,0.06)', border: '1px solid rgba(234,179,8,0.2)',
+            borderRadius: '10px', padding: '10px',
           }}>
-            習得スキル：{GRADUATION_SKILLS.join(' / ')}
+            <div style={{ fontSize: '11px', color: '#92400e', fontWeight: 700, marginBottom: '3px' }}>
+              🏆 卒業判定
+            </div>
+            <div style={{ fontSize: '13px', fontWeight: 700, color: '#94a3b8' }}>未認定</div>
+          </div>
+
+          <div style={{
+            marginTop: '10px', background: '#f8fafc', borderRadius: '10px', padding: '10px',
+            fontSize: '12px', color: '#64748b', lineHeight: 1.7,
+          }}>
+            卒業制作を完成・提出することで認定証が発行されます
           </div>
         </div>
 
@@ -243,6 +307,87 @@ export default function MyPageScreen({ progress, getLevel, getLevelProgress, get
               </div>
             );
           })}
+        </div>
+
+        {/* ===== 8ステージ ロードマップ チェックリスト ===== */}
+        <div style={{ marginBottom: '16px' }}>
+          <div className="section-title" style={{ marginBottom: '10px' }}>🗺️ ロードマップ進捗</div>
+          <div className="card">
+            {ROADMAP_STAGES.map((stage, i) => {
+              const done = (() => {
+                switch (stage.id) {
+                  case 'beginner':  return beginnerDone;
+                  case 'advanced':  return advancedDone;
+                  case 'expert':    return expertDone;
+                  case 'practice':  return missionDone;
+                  default:          return 0;
+                }
+              })();
+              const total = (() => {
+                switch (stage.id) {
+                  case 'beginner': case 'advanced': case 'expert': return 12;
+                  case 'practice': return 6;
+                  default: return null;
+                }
+              })();
+              const isCore = total !== null;
+              const isComplete = isCore && done >= total;
+              const isActive = isCore && done > 0 && !isComplete;
+
+              return (
+                <div key={stage.id} style={{
+                  display: 'flex', alignItems: 'center', gap: '12px',
+                  padding: '10px 0',
+                  borderBottom: i < ROADMAP_STAGES.length - 1 ? '1px solid #f1f5f9' : 'none',
+                }}>
+                  <div style={{
+                    width: '36px', height: '36px', borderRadius: '10px',
+                    background: isComplete ? `${stage.color}15` : isActive ? `${stage.color}10` : '#f8fafc',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: '18px', flexShrink: 0,
+                  }}>
+                    {isComplete ? '✅' : stage.emoji}
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{
+                      fontSize: '13px', fontWeight: 700,
+                      color: isComplete ? '#1e293b' : isActive ? '#1e293b' : '#94a3b8',
+                    }}>
+                      {stage.label}
+                    </div>
+                    {isCore && (
+                      <div style={{ marginTop: '4px' }}>
+                        <div style={{
+                          height: '4px', borderRadius: '99px', background: '#e2e8f0', overflow: 'hidden',
+                          width: '100%',
+                        }}>
+                          <div style={{
+                            height: '100%', borderRadius: '99px', background: stage.color,
+                            width: `${Math.round((done / total) * 100)}%`,
+                          }} />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                    {isCore ? (
+                      <div style={{
+                        fontSize: '12px', fontWeight: 700,
+                        color: isComplete ? '#10b981' : isActive ? stage.color : '#cbd5e1',
+                      }}>
+                        {done}/{total}
+                      </div>
+                    ) : (
+                      <span style={{
+                        fontSize: '10px', fontWeight: 700, padding: '2px 6px', borderRadius: '6px',
+                        background: '#f1f5f9', color: '#94a3b8',
+                      }}>準備中</span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
 
         {/* ===== Total Progress ===== */}
