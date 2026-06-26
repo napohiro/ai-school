@@ -1,9 +1,43 @@
+import { COURSES, ROADMAP_STAGES } from '../data/courses';
+
+const NEW_COURSES = COURSES.filter((c) => ['professional', 'business', 'startup', 'graduation'].includes(c.id));
+
+function getDoneCount(courseId, progress) {
+  switch (courseId) {
+    case 'beginner':  return progress.completedLessons.length;
+    case 'advanced':  return (progress.completedAdvancedLessons || []).length;
+    case 'expert':    return (progress.completedExpertLessons || []).length;
+    case 'practice':  return progress.completedMissions.length;
+    default:          return 0;
+  }
+}
+
+function getCourseTotal(courseId) {
+  switch (courseId) {
+    case 'beginner':  return 12;
+    case 'advanced':  return 12;
+    case 'expert':    return 12;
+    case 'practice':  return 6;
+    default:          return 0;
+  }
+}
+
+function getRoadmapStatus(courseId, progress) {
+  if (['professional', 'business', 'startup', 'graduation'].includes(courseId)) return 'future';
+  const done = getDoneCount(courseId, progress);
+  const total = getCourseTotal(courseId);
+  if (done >= total) return 'completed';
+  if (done > 0) return 'active';
+  return 'notstarted';
+}
+
 export default function HomeScreen({
   progress,
   getLevel,
   getLevelProgress,
   getTotalProgress,
   getNextLesson,
+  getTitle,
   lessons,
   lessonsAdvanced,
   lessonsExpert,
@@ -11,6 +45,7 @@ export default function HomeScreen({
   onNavigate,
 }) {
   const levelInfo = getLevel();
+  const titleInfo = getTitle ? getTitle() : null;
   const levelPct = getLevelProgress();
   const totalPct = getTotalProgress();
 
@@ -34,13 +69,11 @@ export default function HomeScreen({
 
   const completedCount = beginnerDone + advancedDone + expertDone + missionDone;
 
-  // Current active course for roadmap highlight
   const currentCourse =
     beginnerDone < 12 ? 'beginner' :
     advancedDone < 12 ? 'advanced' :
     expertDone < 12   ? 'expert' : 'practice';
 
-  // Primary "next action"
   const primaryLesson = nextLesson || nextAdvancedLesson || nextExpertLesson;
   const primaryCourse = nextLesson
     ? { name: '初級コース', icon: '📗', color: '#3b82f6', pct: beginnerPct, done: beginnerDone, type: 'lesson', tabType: 'beginner' }
@@ -50,22 +83,27 @@ export default function HomeScreen({
     ? { name: '上級コース', icon: '📙', color: '#8b5cf6', pct: expertPct, done: expertDone, type: 'expertLesson', tabType: 'expert' }
     : null;
 
-  const roadmap = [
-    { key: 'beginner',  label: '初級',  icon: '📗', color: '#3b82f6', pct: beginnerPct,  total: 12, done: beginnerDone },
-    { key: 'advanced',  label: '中級',  icon: '📘', color: '#10b981', pct: advancedPct,  total: 12, done: advancedDone },
-    { key: 'expert',    label: '上級',  icon: '📙', color: '#8b5cf6', pct: expertPct,    total: 12, done: expertDone },
-    { key: 'practice',  label: '実践',  icon: '⚡', color: '#f59e0b', pct: missionPct,   total: 6,  done: missionDone },
-  ];
-
   return (
     <div>
       {/* Hero */}
       <div className="home-hero">
         <div className="home-hero-content">
           <h1>🤖 AIスクール</h1>
-          <p>AIを基礎の基礎から、使える力へ</p>
+          <p>AIを武器に人生・仕事・ビジネスを変えるスクール</p>
 
           <div className="progress-card">
+            {/* Title badge */}
+            {titleInfo && (
+              <div style={{
+                display: 'inline-flex', alignItems: 'center', gap: '6px',
+                background: 'rgba(255,255,255,0.15)', borderRadius: '20px',
+                padding: '4px 12px', marginBottom: '10px',
+                fontSize: '12px', fontWeight: 700, color: 'white',
+              }}>
+                <span>{titleInfo.emoji}</span>
+                <span>称号 Lv.{titleInfo.displayLevel} {titleInfo.title}</span>
+              </div>
+            )}
             <div className="level-badge">
               <span>{levelInfo.emoji}</span>
               <span>Lv.{levelInfo.level} {levelInfo.name}</span>
@@ -87,53 +125,97 @@ export default function HomeScreen({
         </div>
       </div>
 
-      {/* ===== Roadmap ===== */}
-      <div style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0', padding: '16px' }}>
-        <div style={{ fontSize: '12px', fontWeight: 800, color: '#94a3b8', marginBottom: '10px' }}>
-          🗺️ 学習ロードマップ
+      {/* ===== 全体ロードマップ（横スクロール） ===== */}
+      <div style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0', padding: '14px 16px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+          <div style={{ fontSize: '12px', fontWeight: 800, color: '#94a3b8' }}>
+            🗺️ 学習ロードマップ
+          </div>
+          <button
+            onClick={() => onNavigate('home', { type: 'roadmap' })}
+            style={{
+              background: 'rgba(99,102,241,0.1)', border: 'none', color: '#6366f1',
+              borderRadius: '8px', padding: '4px 10px', fontFamily: 'inherit',
+              fontSize: '11px', fontWeight: 700, cursor: 'pointer',
+            }}
+          >
+            全ロードマップ ›
+          </button>
         </div>
-        <div style={{ display: 'flex', alignItems: 'stretch', gap: '6px' }}>
-          {roadmap.map((step, idx) => {
-            const isActive = currentCourse === step.key;
-            const isComplete = step.done >= step.total;
+
+        {/* Horizontal scroll roadmap - all 8 stages */}
+        <div style={{
+          display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '4px',
+          scrollbarWidth: 'none', msOverflowStyle: 'none',
+        }}>
+          {ROADMAP_STAGES.map((stage, idx) => {
+            const status = getRoadmapStatus(stage.id, progress);
+            const done = getDoneCount(stage.id, progress);
+            const total = getCourseTotal(stage.id);
+            const isActive = currentCourse === stage.id;
+            const isComplete = status === 'completed';
+            const isFuture = status === 'future';
+
             return (
-              <div key={step.key} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', position: 'relative' }}>
-                {/* Arrow between steps */}
+              <div
+                key={stage.id}
+                style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}
+              >
                 {idx > 0 && (
-                  <div style={{
-                    position: 'absolute', left: '-6px', top: '50%', transform: 'translateY(-50%)',
-                    color: '#cbd5e1', fontSize: '12px', zIndex: 1,
-                  }}>›</div>
+                  <div style={{ color: '#cbd5e1', fontSize: '12px', marginRight: '6px' }}>›</div>
                 )}
                 <div
-                  onClick={() => step.key !== 'practice' ? onNavigate('learning', { type: step.key + 'Tab' }) : onNavigate('practice')}
+                  onClick={() => {
+                    if (stage.id === 'practice') {
+                      onNavigate('practice');
+                    } else if (!isFuture) {
+                      onNavigate('learning', { type: stage.id + 'Tab' });
+                    }
+                  }}
                   style={{
-                    width: '100%',
-                    background: isActive ? step.color : isComplete ? `${step.color}20` : 'white',
-                    border: `2px solid ${isActive ? step.color : isComplete ? `${step.color}60` : '#e2e8f0'}`,
-                    borderRadius: '12px',
-                    padding: '10px 6px',
-                    textAlign: 'center',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s',
+                    minWidth: '68px',
+                    background: isActive ? stage.color : isComplete ? `${stage.color}20` : isFuture ? '#f1f5f9' : 'white',
+                    border: `2px solid ${isActive ? stage.color : isComplete ? `${stage.color}60` : isFuture ? '#e2e8f0' : '#e2e8f0'}`,
+                    borderRadius: '12px', padding: '8px 6px',
+                    textAlign: 'center', cursor: isFuture ? 'default' : 'pointer',
+                  }}
+                >
+                  <div style={{ fontSize: '16px', marginBottom: '2px' }}>
+                    {isComplete ? '✅' : stage.emoji}
+                  </div>
+                  <div style={{
+                    fontSize: '10px', fontWeight: 800,
+                    color: isActive ? 'white' : isComplete ? stage.color : isFuture ? '#cbd5e1' : '#64748b',
                   }}>
-                  <div style={{ fontSize: '18px', marginBottom: '2px' }}>
-                    {isComplete ? '✅' : step.icon}
+                    {stage.label}
                   </div>
-                  <div style={{ fontSize: '11px', fontWeight: 800, color: isActive ? 'white' : isComplete ? step.color : '#64748b' }}>
-                    {step.label}
-                  </div>
-                  <div style={{ fontSize: '10px', color: isActive ? 'rgba(255,255,255,0.8)' : '#94a3b8', marginTop: '2px' }}>
-                    {step.done}/{step.total}
-                  </div>
-                </div>
-                {/* Progress bar under card */}
-                <div style={{ width: '100%', height: '4px', borderRadius: '99px', background: '#e2e8f0', overflow: 'hidden' }}>
-                  <div style={{ height: '100%', borderRadius: '99px', background: step.color, width: `${step.pct}%`, transition: 'width 0.5s ease' }} />
+                  {!isFuture && (
+                    <div style={{
+                      fontSize: '9px',
+                      color: isActive ? 'rgba(255,255,255,0.8)' : '#94a3b8',
+                      marginTop: '1px',
+                    }}>
+                      {done}/{total}
+                    </div>
+                  )}
+                  {isFuture && (
+                    <div style={{ fontSize: '9px', color: '#cbd5e1', marginTop: '1px' }}>準備中</div>
+                  )}
                 </div>
               </div>
             );
           })}
+        </div>
+
+        {/* Graduation progress */}
+        <div style={{ marginTop: '12px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#94a3b8', marginBottom: '4px' }}>
+            <span>卒業までの進捗（初級〜実践）</span>
+            <span style={{ fontWeight: 700, color: '#6366f1' }}>{totalPct}%</span>
+          </div>
+          <div style={{ height: '4px', borderRadius: '99px', background: '#e2e8f0', overflow: 'hidden' }}>
+            <div style={{ height: '100%', borderRadius: '99px', background: 'linear-gradient(90deg, #3b82f6, #8b5cf6)', width: `${totalPct}%`, transition: 'width 0.5s ease' }} />
+          </div>
         </div>
       </div>
 
@@ -197,7 +279,7 @@ export default function HomeScreen({
               全レッスン完了！おめでとう！
             </div>
             <div style={{ fontSize: '13px', color: '#64748b' }}>
-              ミッションにも挑戦してみましょう
+              次はプロフェッショナルコースに挑戦しよう
             </div>
           </div>
         )}
@@ -241,6 +323,71 @@ export default function HomeScreen({
         </div>
       </div>
 
+      {/* ===== 次のステージへ（AI個人開発者への道） ===== */}
+      <div className="section" style={{ paddingTop: '20px' }}>
+        <div className="section-title">🚀 次のステージへ</div>
+
+        {/* AI個人開発者への道 カード */}
+        <div
+          className="card card-hover"
+          style={{
+            background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+            border: 'none', marginBottom: '12px', color: 'white',
+          }}
+          onClick={() => onNavigate('home', { type: 'roadmap' })}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{
+              width: '52px', height: '52px', borderRadius: '14px',
+              background: 'rgba(255,255,255,0.1)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: '28px', flexShrink: 0,
+            }}>🗺️</div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontWeight: 900, fontSize: '16px', marginBottom: '4px' }}>
+                AI個人開発者への道
+              </div>
+              <div style={{ fontSize: '12px', opacity: 0.75, lineHeight: 1.5 }}>
+                初級から卒業制作まで、8ステージの全体ロードマップを確認
+              </div>
+            </div>
+            <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: '20px' }}>›</span>
+          </div>
+        </div>
+
+        {/* New Course Cards */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+          {NEW_COURSES.map((course) => (
+            <div
+              key={course.id}
+              className="card card-hover"
+              style={{
+                background: `linear-gradient(135deg, ${course.color}10 0%, white 100%)`,
+                border: `1.5px solid ${course.color}30`,
+                padding: '14px',
+              }}
+              onClick={() => onNavigate('learning', { type: course.id + 'Tab' })}
+            >
+              <div style={{ fontSize: '28px', marginBottom: '8px' }}>{course.emoji}</div>
+              <div style={{ fontWeight: 800, fontSize: '13px', color: '#1e293b', marginBottom: '4px', lineHeight: 1.3 }}>
+                {course.name}
+              </div>
+              <div style={{ fontSize: '11px', color: '#64748b', marginBottom: '8px', lineHeight: 1.4 }}>
+                {course.subtitle}
+              </div>
+              <span style={{
+                display: 'inline-block',
+                fontSize: '10px', fontWeight: 700, padding: '3px 8px', borderRadius: '8px',
+                background: course.badgeStatus === 'recommended' ? `${course.color}20` : '#f1f5f9',
+                color: course.badgeStatus === 'recommended' ? course.color : '#94a3b8',
+              }}>
+                {course.badgeStatus === 'recommended' ? '⭐ おすすめ' : '🔒 準備中'}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* Today's Mission */}
       {nextMission && (
         <div className="section" style={{ paddingTop: '20px' }}>
@@ -275,7 +422,7 @@ export default function HomeScreen({
             学習の進め方
           </div>
           <div style={{ fontSize: '13px', color: '#64748b', lineHeight: 1.7 }}>
-            ① 初級でAIの基礎を理解 → ② 中級でAIを仕事に活用 → ③ 上級でアプリを作る → ④ 実践で成果物を完成！この順番で学ぶと最も効果的です。
+            ① 初級でAIの基礎を理解 → ② 中級でAIを仕事に活用 → ③ 上級でアプリを作る → ④ 実践で成果物を完成 → ⑤ プロ・ビジネス・起業で飛躍！
           </div>
         </div>
       </div>

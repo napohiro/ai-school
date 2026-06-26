@@ -237,6 +237,18 @@ export function useProgress() {
     );
   }
 
+  function getTitle() {
+    const xp = progress.xp;
+    if (xp >= 4000) return { title: 'AIアーキテクト', displayLevel: 60, emoji: '👑' };
+    if (xp >= 3000) return { title: 'AIマスター',     displayLevel: 50, emoji: '🏆' };
+    if (xp >= 2000) return { title: 'AIスペシャリスト', displayLevel: 40, emoji: '🔥' };
+    if (xp >= 1500) return { title: 'AIエンジニア',   displayLevel: 30, emoji: '⚙️' };
+    if (xp >= 1000) return { title: 'AIデベロッパー', displayLevel: 20, emoji: '🚀' };
+    if (xp >= 500)  return { title: 'AIクリエイター', displayLevel: 10, emoji: '✨' };
+    if (xp >= 150)  return { title: 'AI活用者',       displayLevel: 5,  emoji: '🌱' };
+    return              { title: 'AI初心者',       displayLevel: 1,  emoji: '🎮' };
+  }
+
   return {
     progress,
     completeLesson,
@@ -253,5 +265,6 @@ export function useProgress() {
     recordQuizResult,
     getQuizStats,
     isGraduated,
+    getTitle,
   };
 }

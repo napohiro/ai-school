@@ -19,6 +19,7 @@ import PracticeScreen from './screens/PracticeScreen';
 import MissionDetailScreen from './screens/MissionDetailScreen';
 import ToolsScreen from './screens/ToolsScreen';
 import MyPageScreen from './screens/MyPageScreen';
+import RoadmapScreen from './screens/RoadmapScreen';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('home');
@@ -45,6 +46,7 @@ export default function App() {
     recordQuizResult,
     getQuizStats,
     isGraduated,
+    getTitle,
   } = useProgress();
 
   const showWelcome = !progress.welcomeSeen;
@@ -126,14 +128,30 @@ export default function App() {
     };
   }, []);
 
-  // Determine initialTab for LearningScreen based on subScreen type
   function getLearningInitialTab() {
-    if (subScreen?.type === 'advancedTab') return 'advanced';
-    if (subScreen?.type === 'expertTab') return 'expert';
+    if (subScreen?.type === 'advancedTab')     return 'advanced';
+    if (subScreen?.type === 'expertTab')       return 'expert';
+    if (subScreen?.type === 'practiceTab')     return 'practice';
+    if (subScreen?.type === 'professionalTab') return 'professional';
+    if (subScreen?.type === 'businessTab')     return 'business';
+    if (subScreen?.type === 'startupTab')      return 'startup';
+    if (subScreen?.type === 'graduationTab')   return 'graduation';
+    if (subScreen?.type === 'specialTab')      return 'special';
     return 'beginner';
   }
 
   function renderContent() {
+    // Roadmap screen (from home)
+    if (activeTab === 'home' && subScreen?.type === 'roadmap') {
+      return (
+        <RoadmapScreen
+          progress={progress}
+          onBack={handleBack}
+          onNavigate={handleNavigate}
+        />
+      );
+    }
+
     // Lesson detail screens
     if (activeTab === 'learning' && subScreen?.type === 'lesson') {
       const lessonIdx = lessons.findIndex((l) => l.id === subScreen.id);
@@ -218,6 +236,7 @@ export default function App() {
             getLevelProgress={getLevelProgress}
             getTotalProgress={getTotalProgress}
             getNextLesson={getNextLesson}
+            getTitle={getTitle}
             lessons={lessons}
             lessonsAdvanced={lessonsAdvanced}
             lessonsExpert={lessonsExpert}
@@ -237,7 +256,10 @@ export default function App() {
             lessonsExpert={lessonsExpert}
             completedExpertLessons={progress.completedExpertLessons}
             onSelectExpertLesson={(id) => { setSubScreen({ type: 'expertLesson', id }); scrollToTop(); }}
+            missions={missions}
+            completedMissions={progress.completedMissions}
             initialTab={getLearningInitialTab()}
+            onNavigate={handleNavigate}
           />
         );
       case 'practice':
@@ -257,9 +279,11 @@ export default function App() {
             getLevel={getLevel}
             getLevelProgress={getLevelProgress}
             getTotalProgress={getTotalProgress}
+            getTitle={getTitle}
             onReset={resetAll}
             quizStats={getQuizStats()}
             isGraduated={isGraduated}
+            onNavigate={handleNavigate}
           />
         );
       default:
