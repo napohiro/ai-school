@@ -53,11 +53,9 @@ export default function MyPageScreen({
 
   return (
     <div>
-      <div className="gradient-header">
-        <div style={{ position: 'relative', zIndex: 1 }}>
-          <h1>👤 マイページ</h1>
-          <p>学習の記録と進捗</p>
-        </div>
+      <div style={{ background: 'var(--navy)', padding: '20px 20px 24px' }}>
+        <h1 style={{ color: 'white', margin: 0, fontSize: '20px', fontWeight: 800 }}>マイページ</h1>
+        <p style={{ color: 'rgba(255,255,255,0.45)', margin: '4px 0 0', fontSize: '13px', fontWeight: 500 }}>学習の記録と進捗</p>
       </div>
 
       <div style={{ padding: '16px' }}>
@@ -80,8 +78,8 @@ export default function MyPageScreen({
 
         {/* ── レベルカード ── */}
         <div style={{
-          background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-          borderRadius: '20px', padding: '20px', marginBottom: '14px', color: 'white',
+          background: 'var(--navy)',
+          borderRadius: '16px', padding: '20px', marginBottom: '14px', color: 'white',
         }}>
           {titleInfo && (
             <div style={{

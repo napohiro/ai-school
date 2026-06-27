@@ -1,47 +1,12 @@
 import { ROADMAP_STAGES } from '../data/courses';
 
 const STEP_CONFIG = [
-  { key: 'step1', completedKey: 'completedStep1', lessonsProp: 'lessonsStep1', navType: 'step1',    tabType: 'step1Tab', name: 'STEP1 AI基礎',    icon: '🤖', color: '#3b82f6', stepNum: 1 },
-  { key: 'step2', completedKey: 'completedStep2', lessonsProp: 'lessonsStep2', navType: 'step2',    tabType: 'step2Tab', name: 'STEP2 AI実践',    icon: '💼', color: '#10b981', stepNum: 2 },
-  { key: 'step3', completedKey: 'completedStep3', lessonsProp: 'lessonsStep3', navType: 'step3',    tabType: 'step3Tab', name: 'STEP3 AIクリエイト', icon: '🎨', color: '#ec4899', stepNum: 3 },
-  { key: 'step4', completedKey: 'completedStep4', lessonsProp: 'lessonsStep4', navType: 'step4',    tabType: 'step4Tab', name: 'STEP4 AI開発',    icon: '💻', color: '#8b5cf6', stepNum: 4 },
-  { key: 'step5', completedKey: 'completedStep5', lessonsProp: 'lessonsStep5', navType: 'step5',    tabType: 'step5Tab', name: 'STEP5 AI収益化',  icon: '💰', color: '#f59e0b', stepNum: 5 },
+  { key: 'step1', completedKey: 'completedStep1', lessonsProp: 'lessonsStep1', navType: 'step1', tabType: 'step1Tab', name: 'STEP 1  AI基礎',      color: '#3b82f6', stepNum: 1 },
+  { key: 'step2', completedKey: 'completedStep2', lessonsProp: 'lessonsStep2', navType: 'step2', tabType: 'step2Tab', name: 'STEP 2  AI実践',      color: '#10b981', stepNum: 2 },
+  { key: 'step3', completedKey: 'completedStep3', lessonsProp: 'lessonsStep3', navType: 'step3', tabType: 'step3Tab', name: 'STEP 3  AIクリエイト', color: '#ec4899', stepNum: 3 },
+  { key: 'step4', completedKey: 'completedStep4', lessonsProp: 'lessonsStep4', navType: 'step4', tabType: 'step4Tab', name: 'STEP 4  AI開発',      color: '#8b5cf6', stepNum: 4 },
+  { key: 'step5', completedKey: 'completedStep5', lessonsProp: 'lessonsStep5', navType: 'step5', tabType: 'step5Tab', name: 'STEP 5  AI収益化',    color: '#f59e0b', stepNum: 5 },
 ];
-
-function getDoneCount(stepId, progress) {
-  const map = {
-    step1: progress.completedStep1?.length || 0,
-    step2: progress.completedStep2?.length || 0,
-    step3: progress.completedStep3?.length || 0,
-    step4: progress.completedStep4?.length || 0,
-    step5: progress.completedStep5?.length || 0,
-    step6: 0,
-  };
-  return map[stepId] || 0;
-}
-
-function StageBar({ label, done, total }) {
-  const blocks = 6;
-  const filled = total > 0 ? Math.round((done / total) * blocks) : 0;
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-      <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.65)', fontWeight: 700, width: '20px', letterSpacing: '0px' }}>
-        {label}
-      </span>
-      <div style={{ display: 'flex', gap: '2px' }}>
-        {Array.from({ length: blocks }).map((_, i) => (
-          <div
-            key={i}
-            style={{
-              width: 7, height: 7, borderRadius: '2px',
-              background: i < filled ? 'white' : 'rgba(255,255,255,0.22)',
-            }}
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
 
 export default function HomeScreen({
   progress,
@@ -50,20 +15,15 @@ export default function HomeScreen({
   getTotalProgress,
   getNextLesson,
   getTitle,
-  lessonsStep1,
-  lessonsStep2,
-  lessonsStep3,
-  lessonsStep4,
-  lessonsStep5,
+  lessonsStep1, lessonsStep2, lessonsStep3, lessonsStep4, lessonsStep5,
   missions,
   onNavigate,
 }) {
-  const levelInfo = getLevel();
-  const levelPct = getLevelProgress();
+  const levelInfo    = getLevel();
+  const levelPct     = getLevelProgress();
+  const titleInfo    = getTitle ? getTitle() : null;
 
-  const allStepLessons = {
-    lessonsStep1, lessonsStep2, lessonsStep3, lessonsStep4, lessonsStep5,
-  };
+  const allStepLessons = { lessonsStep1, lessonsStep2, lessonsStep3, lessonsStep4, lessonsStep5 };
 
   const stepDone = {
     step1: progress.completedStep1?.length || 0,
@@ -73,274 +33,252 @@ export default function HomeScreen({
     step5: progress.completedStep5?.length || 0,
   };
 
-  const missionDone = progress.completedMissions?.length || 0;
-
-  // Find the current active STEP (first not completed)
-  const currentStepCfg = STEP_CONFIG.find((s) => {
-    const done = stepDone[s.key];
-    return done < 6;
-  }) || null;
-
-  // Find next lesson across steps
-  let primaryLesson = null;
-  let primaryStepCfg = null;
+  /* Next lesson to study */
+  let primaryLesson    = null;
+  let primaryStepCfg   = null;
   for (const stepCfg of STEP_CONFIG) {
-    const lessons = allStepLessons[stepCfg.lessonsProp] || [];
+    const lessons   = allStepLessons[stepCfg.lessonsProp] || [];
     const completed = progress[stepCfg.completedKey] || [];
-    const next = lessons.find((l) => !completed.includes(l.id));
-    if (next) {
-      primaryLesson = next;
-      primaryStepCfg = stepCfg;
-      break;
-    }
+    const next      = lessons.find((l) => !completed.includes(l.id));
+    if (next) { primaryLesson = next; primaryStepCfg = stepCfg; break; }
   }
 
-  const nextMission = missions?.find((m) => !progress.completedMissions?.includes(m.id));
-  const all5StepsDone = STEP_CONFIG.every((s) => stepDone[s.key] >= 6);
+  const all5Done = STEP_CONFIG.every((s) => stepDone[s.key] >= 6);
 
   return (
-    <div style={{ background: '#fff', minHeight: '100%' }}>
+    <div style={{ background: 'var(--bg)', minHeight: '100%' }}>
 
       {/* ── HERO ── */}
       <div style={{
-        background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
-        padding: '20px 16px 28px',
+        background: 'var(--navy)',
+        padding: '22px 20px 26px',
         position: 'relative', overflow: 'hidden',
       }}>
+        {/* Subtle decoration circles */}
         <div style={{
-          position: 'absolute', top: -40, right: -40,
-          width: 160, height: 160,
-          background: 'rgba(255,255,255,0.07)', borderRadius: '50%',
-          pointerEvents: 'none',
+          position: 'absolute', top: -48, right: -48,
+          width: 140, height: 140,
+          border: '1px solid rgba(255,255,255,0.04)',
+          borderRadius: '50%', pointerEvents: 'none',
+        }} />
+        <div style={{
+          position: 'absolute', bottom: -32, left: -32,
+          width: 100, height: 100,
+          border: '1px solid rgba(255,255,255,0.03)',
+          borderRadius: '50%', pointerEvents: 'none',
         }} />
 
-        {/* Top row: title + stage progress */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative', zIndex: 1, marginBottom: '16px' }}>
-          <div>
-            <div style={{ fontSize: '20px', fontWeight: 900, color: 'white', letterSpacing: '-0.3px' }}>
-              🤖 AIスクール
-            </div>
-            <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.75)', marginTop: '2px' }}>
-              AIを使える人になる実践スクール
-            </div>
-          </div>
-          <div style={{
-            background: 'rgba(255,255,255,0.18)', border: '1px solid rgba(255,255,255,0.25)',
-            borderRadius: '12px', padding: '8px 12px', textAlign: 'right',
-          }}>
-            <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.65)', fontWeight: 700, marginBottom: '5px', letterSpacing: '0.5px' }}>
-              現在地
-            </div>
-            <StageBar label="S1" done={stepDone.step1} total={6} />
-            <div style={{ height: '3px' }} />
-            <StageBar label="S2" done={stepDone.step2} total={6} />
-            <div style={{ height: '3px' }} />
-            <StageBar label="S3" done={stepDone.step3} total={6} />
-            <div style={{ height: '3px' }} />
-            <StageBar label="S4" done={stepDone.step4} total={6} />
-            <div style={{ height: '3px' }} />
-            <StageBar label="S5" done={stepDone.step5} total={6} />
-          </div>
-        </div>
-
-        {/* Level + XP */}
         <div style={{ position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
-            <span style={{
-              background: 'rgba(255,255,255,0.2)', color: 'white',
-              borderRadius: '20px', padding: '4px 12px',
-              fontSize: '12px', fontWeight: 700,
-            }}>
-              {levelInfo.emoji} Lv.{levelInfo.level} {levelInfo.name}
-            </span>
-            <span style={{ color: 'rgba(255,255,255,0.8)', fontSize: '12px', fontWeight: 600 }}>
-              ✨ {progress.xp} XP
-            </span>
-          </div>
-          <div style={{ height: '4px', borderRadius: '99px', background: 'rgba(255,255,255,0.25)', overflow: 'hidden' }}>
-            <div style={{ height: '100%', borderRadius: '99px', background: 'white', width: `${levelPct}%`, transition: 'width 0.5s ease' }} />
-          </div>
-          {levelInfo.nextXp && (
-            <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: '11px', marginTop: '4px', textAlign: 'right' }}>
-              次のLvまで {levelInfo.nextXp - progress.xp} XP
+          {/* Label + level card row */}
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '18px' }}>
+            <div>
+              <div style={{ fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.3)', letterSpacing: '2px', marginBottom: '6px' }}>
+                AI SCHOOL
+              </div>
+              <div style={{ fontSize: '20px', fontWeight: 700, color: 'white', lineHeight: 1.25, letterSpacing: '-0.2px' }}>
+                {titleInfo ? titleInfo.title : levelInfo.name}
+              </div>
+              <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', marginTop: '3px', fontWeight: 500 }}>
+                {progress.xp.toLocaleString()} XP 獲得中
+              </div>
             </div>
-          )}
+            <div style={{
+              background: 'rgba(255,255,255,0.07)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              borderRadius: '14px',
+              padding: '10px 16px',
+              textAlign: 'center',
+              minWidth: '60px',
+            }}>
+              <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.35)', fontWeight: 700, letterSpacing: '1px', marginBottom: '2px' }}>
+                LV
+              </div>
+              <div style={{ fontSize: '26px', fontWeight: 900, color: 'white', lineHeight: 1 }}>
+                {levelInfo.level}
+              </div>
+            </div>
+          </div>
+
+          {/* XP bar */}
+          <div>
+            <div className="progress-bar-white">
+              <div className="progress-bar-white-inner" style={{ width: `${levelPct}%` }} />
+            </div>
+            {levelInfo.nextXp && (
+              <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', marginTop: '5px', fontWeight: 500 }}>
+                次のレベルまで {levelInfo.nextXp - progress.xp} XP
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* ── 次にやること ── */}
-      <div style={{ padding: '20px 16px 0' }}>
-        <div style={{ fontSize: '11px', fontWeight: 800, color: '#94a3b8', letterSpacing: '0.5px', textTransform: 'uppercase', marginBottom: '12px' }}>
+      <div style={{ padding: '20px 20px 0' }}>
+
+        {/* ── 次にやること ── */}
+        <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '10px' }}>
           次にやること
         </div>
 
         {primaryLesson && primaryStepCfg ? (
           <div style={{
-            border: `2px solid ${primaryStepCfg.color}`,
-            borderRadius: '16px', overflow: 'hidden',
+            background: 'var(--surface)',
+            border: '1px solid var(--border)',
+            borderRadius: '16px',
+            overflow: 'hidden',
+            marginBottom: '20px',
           }}>
+            {/* Step label bar */}
             <div style={{
-              background: primaryStepCfg.color, padding: '8px 14px',
+              background: primaryStepCfg.color,
+              padding: '8px 16px',
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             }}>
-              <span style={{ color: 'white', fontSize: '12px', fontWeight: 700 }}>
-                {primaryStepCfg.icon} {primaryStepCfg.name}
+              <span style={{ color: 'rgba(255,255,255,0.9)', fontSize: '12px', fontWeight: 700 }}>
+                {primaryStepCfg.name}
               </span>
-              <span style={{ color: 'rgba(255,255,255,0.8)', fontSize: '11px', fontWeight: 600 }}>
+              <span style={{ color: 'rgba(255,255,255,0.65)', fontSize: '11px', fontWeight: 600 }}>
                 {stepDone[primaryStepCfg.key]}/6 完了
               </span>
             </div>
-            <div style={{ padding: '16px', background: 'white' }}>
+
+            {/* Lesson content */}
+            <div style={{ padding: '16px' }}>
               <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '14px' }}>
-                <span style={{ fontSize: '36px', lineHeight: 1 }}>{primaryLesson.emoji}</span>
+                <span style={{ fontSize: '32px', lineHeight: 1, flexShrink: 0 }}>
+                  {primaryLesson.emoji}
+                </span>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontWeight: 800, fontSize: '16px', color: '#1e293b', marginBottom: '3px' }}>
+                  <div style={{ fontWeight: 700, fontSize: '15px', color: 'var(--text)', marginBottom: '3px', lineHeight: 1.3 }}>
                     {primaryLesson.title}
                   </div>
-                  <div style={{ fontSize: '12px', color: '#64748b' }}>
-                    🕐 {primaryLesson.duration}
+                  <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                    約 {primaryLesson.duration}
                   </div>
                 </div>
               </div>
+
+              {/* Step progress bar */}
               <div style={{ marginBottom: '14px' }}>
-                <div style={{ height: '4px', borderRadius: '99px', background: '#e2e8f0', overflow: 'hidden' }}>
+                <div style={{ height: '3px', borderRadius: '99px', background: 'var(--border)', overflow: 'hidden' }}>
                   <div style={{
-                    height: '100%', borderRadius: '99px', background: primaryStepCfg.color,
+                    height: '100%', borderRadius: '99px',
+                    background: primaryStepCfg.color,
                     width: `${Math.round((stepDone[primaryStepCfg.key] / 6) * 100)}%`,
                     transition: 'width 0.5s ease', minWidth: '4px',
                   }} />
                 </div>
               </div>
+
               <button
                 style={{
-                  width: '100%', padding: '14px', border: 'none', borderRadius: '12px',
-                  background: primaryStepCfg.color, color: 'white', fontFamily: 'inherit',
-                  fontWeight: 800, fontSize: '15px', cursor: 'pointer',
-                  boxShadow: `0 4px 14px ${primaryStepCfg.color}40`,
+                  width: '100%', padding: '13px', border: 'none',
+                  borderRadius: '10px', background: primaryStepCfg.color,
+                  color: 'white', fontFamily: 'inherit',
+                  fontWeight: 700, fontSize: '14px', cursor: 'pointer',
                 }}
                 onClick={() => onNavigate('learning', { type: primaryStepCfg.navType, id: primaryLesson.id })}
               >
-                ▶ 続きを学ぶ
+                学習を続ける
               </button>
             </div>
           </div>
-        ) : all5StepsDone ? (
+        ) : all5Done ? (
           <div style={{
-            background: '#f0fdf4', border: '2px solid #86efac',
-            borderRadius: '16px', padding: '24px', textAlign: 'center',
+            background: 'var(--success-bg)',
+            border: '1.5px solid #6ee7b7',
+            borderRadius: '16px', padding: '22px',
+            textAlign: 'center', marginBottom: '20px',
           }}>
-            <div style={{ fontSize: '48px', marginBottom: '12px' }}>🏆</div>
-            <div style={{ fontWeight: 800, fontSize: '16px', color: '#065f46', marginBottom: '6px' }}>
-              STEP1〜5完了！おめでとう！
+            <div style={{ fontSize: '36px', marginBottom: '10px' }}>🏆</div>
+            <div style={{ fontWeight: 700, fontSize: '16px', color: '#065f46', marginBottom: '6px' }}>
+              STEP 1〜5 すべて完了！
             </div>
-            <div style={{ fontSize: '13px', color: '#64748b', marginBottom: '16px' }}>
+            <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '14px' }}>
               次は卒業制作でAIサービスを公開しよう
             </div>
             <button
-              style={{
-                padding: '12px 24px', border: 'none', borderRadius: '12px',
-                background: '#eab308', color: 'white', fontFamily: 'inherit',
-                fontWeight: 800, fontSize: '14px', cursor: 'pointer',
-              }}
+              className="btn btn-success"
               onClick={() => onNavigate('learning', { type: 'step6Tab' })}
             >
-              🎓 卒業制作を始める
+              卒業制作を始める
             </button>
           </div>
         ) : null}
-      </div>
 
-      {/* ── ロードマップ ── */}
-      <div style={{ padding: '20px 16px 0' }}>
+        {/* ── ロードマップ ── */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-          <div style={{ fontSize: '11px', fontWeight: 800, color: '#94a3b8', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+          <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '1px', textTransform: 'uppercase' }}>
             学習ロードマップ
           </div>
           <button
             onClick={() => onNavigate('home', { type: 'roadmap' })}
             style={{
-              background: 'none', border: 'none', color: '#6366f1',
-              fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
+              background: 'none', border: 'none', color: 'var(--primary)',
+              fontSize: '12px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
             }}
           >
             詳細 ›
           </button>
         </div>
 
-        <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '4px', scrollbarWidth: 'none' }}>
+        <div style={{
+          display: 'flex', gap: '0',
+          background: 'var(--surface)',
+          border: '1px solid var(--border)',
+          borderRadius: '14px',
+          overflow: 'hidden',
+          marginBottom: '20px',
+        }}>
           {ROADMAP_STAGES.map((stage, idx) => {
-            const done = getDoneCount(stage.id, progress);
-            const total = stage.total;
-            const isCompleted = total > 0 && done >= total;
-            const isGrad = stage.id === 'step6';
-            const isActive = !isGrad && !isCompleted && currentStepCfg?.key === stage.id;
+            const done        = stepDone[stage.id] || 0;
+            const total       = stage.total || 6;
+            const isGrad      = stage.id === 'step6';
+            const isCompleted = !isGrad && done >= total;
+            const isCurrent   = !isGrad && !isCompleted && (
+              idx === 0 || ROADMAP_STAGES.slice(0, idx).every((s) => (stepDone[s.id] || 0) >= (s.total || 6))
+            );
 
             return (
-              <div key={stage.id} style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
-                {idx > 0 && (
-                  <div style={{ color: isCompleted ? '#10b981' : '#cbd5e1', fontSize: '10px', marginRight: '6px' }}>›</div>
-                )}
-                <div
-                  onClick={() => {
-                    if (isGrad) { onNavigate('learning', { type: 'step6Tab' }); return; }
-                    onNavigate('learning', { type: `${stage.id}Tab` });
-                  }}
-                  style={{
-                    minWidth: '60px',
-                    background: isActive ? stage.color : isCompleted ? `${stage.color}15` : isGrad ? '#f8fafc' : 'white',
-                    border: `1.5px solid ${isActive ? stage.color : isCompleted ? `${stage.color}50` : '#e2e8f0'}`,
-                    borderRadius: '12px', padding: '8px 4px',
-                    textAlign: 'center', cursor: 'pointer',
-                  }}
-                >
-                  <div style={{ fontSize: '15px', marginBottom: '2px' }}>
-                    {isCompleted ? '✅' : stage.emoji}
-                  </div>
+              <button
+                key={stage.id}
+                onClick={() => onNavigate('learning', { type: isGrad ? 'step6Tab' : `${stage.id}Tab` })}
+                style={{
+                  flex: 1,
+                  padding: '12px 4px 10px',
+                  border: 'none',
+                  borderRight: idx < ROADMAP_STAGES.length - 1 ? '1px solid var(--border)' : 'none',
+                  background: isCompleted ? '#ecfdf5' : isCurrent ? 'var(--primary-light)' : 'transparent',
+                  cursor: 'pointer',
+                  fontFamily: 'inherit',
+                  transition: 'background 0.15s',
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px',
+                }}
+              >
+                <span style={{ fontSize: '16px', lineHeight: 1 }}>
+                  {isCompleted ? '✓' : stage.emoji}
+                </span>
+                <span style={{
+                  fontSize: '8px', fontWeight: 700,
+                  color: isCompleted ? 'var(--success)' : isCurrent ? 'var(--primary)' : 'var(--text-muted)',
+                  letterSpacing: '0.3px',
+                }}>
+                  S{stage.stepNum}
+                </span>
+                {!isGrad && (
                   <div style={{
-                    fontSize: '9px', fontWeight: 800,
-                    color: isActive ? 'white' : isCompleted ? stage.color : isGrad ? '#cbd5e1' : '#64748b',
-                  }}>
-                    {stage.label}
-                  </div>
-                  {!isGrad && total > 0 && (
-                    <div style={{ fontSize: '9px', color: isActive ? 'rgba(255,255,255,0.75)' : '#94a3b8', marginTop: '1px' }}>
-                      {done}/{total}
-                    </div>
-                  )}
-                  {isGrad && <div style={{ fontSize: '9px', color: '#cbd5e1', marginTop: '1px' }}>🔒</div>}
-                </div>
-              </div>
+                    width: '20px', height: '2px', borderRadius: '99px',
+                    background: isCompleted ? 'var(--success)' : isCurrent ? 'var(--primary)' : 'var(--border)',
+                  }} />
+                )}
+              </button>
             );
           })}
         </div>
+
       </div>
 
-      {/* ── 進捗サマリー ── */}
-      <div style={{ padding: '16px 16px 0' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr', gap: '6px' }}>
-          {STEP_CONFIG.map((s) => (
-            <div key={s.key} style={{
-              background: '#f8fafc', border: '1px solid #e2e8f0',
-              borderRadius: '10px', padding: '10px 4px', textAlign: 'center',
-            }}>
-              <div style={{ fontSize: '16px', fontWeight: 900, color: s.color }}>
-                {stepDone[s.key]}
-              </div>
-              <div style={{ fontSize: '8px', color: '#94a3b8', fontWeight: 600, marginTop: '2px' }}>
-                / 6 S{s.stepNum}
-              </div>
-              <div style={{ height: '3px', borderRadius: '99px', background: '#e2e8f0', overflow: 'hidden', marginTop: '5px' }}>
-                <div style={{
-                  height: '100%', borderRadius: '99px', background: s.color,
-                  width: `${Math.round((stepDone[s.key] / 6) * 100)}%`,
-                }} />
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div style={{ height: '24px' }} />
+      <div style={{ height: '20px' }} />
     </div>
   );
 }

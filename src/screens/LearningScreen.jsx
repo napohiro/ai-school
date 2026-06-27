@@ -17,53 +17,43 @@ function CourseSummaryBanner({ courseId, cfg, completedCount, totalCount }) {
   const course = getCourseById(courseId);
   if (!course) return null;
   const pct = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+  const allDone = completedCount >= totalCount;
 
   return (
     <div style={{
-      background: `linear-gradient(135deg, ${cfg.color}10 0%, white 100%)`,
-      border: `1.5px solid ${cfg.colorBorder}`,
-      borderRadius: '16px', padding: '16px', marginBottom: '14px',
+      background: 'var(--surface)',
+      border: '1px solid var(--border)',
+      borderRadius: '14px', padding: '16px', marginBottom: '12px',
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
         <div style={{
-          width: '42px', height: '42px', borderRadius: '12px',
-          background: `${cfg.color}15`, border: `1.5px solid ${cfg.colorBorder}`,
+          width: '40px', height: '40px', borderRadius: '10px',
+          background: `${cfg.color}12`,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: '22px', flexShrink: 0,
+          fontSize: '20px', flexShrink: 0,
         }}>{course.emoji}</div>
-        <div style={{ flex: 1 }}>
-          <div style={{ fontSize: '10px', fontWeight: 700, color: cfg.color, letterSpacing: '1px', marginBottom: '2px' }}>
-            STEP {course.order} — 学習ゴール
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: '10px', fontWeight: 700, color: cfg.color, letterSpacing: '1px', marginBottom: '2px', textTransform: 'uppercase' }}>
+            STEP {course.order}
           </div>
-          <div style={{ fontSize: '15px', fontWeight: 900, color: '#1e293b', lineHeight: 1.3 }}>
+          <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text)', lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {course.goal}
           </div>
         </div>
         <div style={{
-          fontSize: '15px', fontWeight: 900, color: cfg.color,
-          background: `${cfg.color}10`, borderRadius: '10px', padding: '4px 8px', flexShrink: 0,
-        }}>{pct}%</div>
-      </div>
-
-      <div style={{ marginBottom: '12px' }}>
-        <div style={{ height: '5px', borderRadius: '99px', background: '#e2e8f0', overflow: 'hidden' }}>
-          <div style={{ height: '100%', borderRadius: '99px', background: cfg.color, width: `${pct}%`, transition: 'width 0.5s ease' }} />
-        </div>
-        <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '4px' }}>
-          {completedCount} / {totalCount} レッスン完了
+          fontSize: '14px', fontWeight: 800,
+          color: allDone ? 'var(--success)' : cfg.color,
+          flexShrink: 0,
+        }}>
+          {pct}%
         </div>
       </div>
-
-      {course.skills && (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
-          {course.skills.map((skill) => (
-            <span key={skill} style={{
-              fontSize: '10px', fontWeight: 700, padding: '2px 8px', borderRadius: '6px',
-              background: `${cfg.color}10`, color: cfg.color, border: `1px solid ${cfg.colorBorder}`,
-            }}>✓ {skill}</span>
-          ))}
-        </div>
-      )}
+      <div style={{ height: '4px', borderRadius: '99px', background: 'var(--border)', overflow: 'hidden' }}>
+        <div style={{ height: '100%', borderRadius: '99px', background: allDone ? 'var(--success)' : cfg.color, width: `${pct}%`, transition: 'width 0.5s ease' }} />
+      </div>
+      <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '5px' }}>
+        {completedCount} / {totalCount} レッスン完了
+      </div>
     </div>
   );
 }
@@ -75,8 +65,8 @@ function GraduationTabContent() {
   return (
     <div style={{ padding: '16px' }}>
       <div style={{
-        background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
-        borderRadius: '20px', padding: '24px', marginBottom: '16px', color: 'white', textAlign: 'center',
+        background: 'var(--navy)',
+        borderRadius: '16px', padding: '24px', marginBottom: '16px', color: 'white', textAlign: 'center',
       }}>
         <div style={{ fontSize: '48px', marginBottom: '10px' }}>🎓</div>
         <div style={{ fontSize: '11px', fontWeight: 700, color: '#eab308', letterSpacing: '2px', marginBottom: '6px' }}>
@@ -227,48 +217,57 @@ function StepLessonTab({ cfg, courseId, lessons, completed, onSelect }) {
 
       {nextLesson ? (
         <div style={{
-          background: cfg.colorBg, border: `1.5px solid ${cfg.colorBorder}`,
-          borderRadius: '14px', padding: '14px', marginBottom: '16px',
+          background: 'var(--surface)',
+          borderLeft: `3px solid ${cfg.color}`,
+          border: `1px solid var(--border)`,
+          borderLeftWidth: '3px',
+          borderLeftColor: cfg.color,
+          borderRadius: '12px', padding: '14px', marginBottom: '12px',
         }}>
-          <div style={{ fontSize: '11px', color: cfg.color, fontWeight: 700, marginBottom: '8px' }}>
-            ▶ 次におすすめ
+          <div style={{ fontSize: '10px', fontWeight: 700, color: cfg.color, letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '8px' }}>
+            次のレッスン
           </div>
           <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '12px' }}>
-            <div style={{
-              width: '44px', height: '44px', borderRadius: '12px', background: cfg.colorLight,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: '22px', flexShrink: 0,
-            }}>{nextLesson.emoji}</div>
+            <span style={{ fontSize: '26px', lineHeight: 1, flexShrink: 0 }}>
+              {nextLesson.emoji}
+            </span>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontWeight: 700, fontSize: '14px', color: '#1e293b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <div style={{ fontWeight: 600, fontSize: '14px', color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {nextLesson.title}
               </div>
-              <div style={{ fontSize: '12px', color: '#64748b' }}>🕐 {nextLesson.duration} • {nextLesson.category}</div>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                約 {nextLesson.duration}
+              </div>
             </div>
           </div>
           <button
             style={{
-              width: '100%', padding: '11px', border: 'none', borderRadius: '10px',
+              width: '100%', padding: '11px', border: 'none', borderRadius: '8px',
               background: cfg.color, color: 'white', fontFamily: 'inherit',
-              fontWeight: 800, fontSize: '14px', cursor: 'pointer',
+              fontWeight: 700, fontSize: '14px', cursor: 'pointer',
             }}
             onClick={() => onSelect(nextLesson.id)}
           >
-            ▶ 学習を続ける
+            学習を続ける
           </button>
         </div>
       ) : (
         <div style={{
-          textAlign: 'center', padding: '16px', marginBottom: '16px',
-          background: 'rgba(16,185,129,0.06)', border: '1.5px solid rgba(16,185,129,0.2)',
-          borderRadius: '14px', color: '#065f46', fontWeight: 800, fontSize: '14px',
+          padding: '14px', marginBottom: '12px',
+          background: 'var(--success-bg)',
+          border: '1px solid #a7f3d0',
+          borderRadius: '12px',
+          display: 'flex', alignItems: 'center', gap: '10px',
         }}>
-          🎉 このSTEPのレッスンをすべて完了！
+          <span style={{ fontSize: '20px' }}>✓</span>
+          <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--success)' }}>
+            このSTEPのレッスンをすべて完了！
+          </span>
         </div>
       )}
 
-      <div style={{ fontSize: '12px', fontWeight: 800, color: '#94a3b8', marginBottom: '10px' }}>
-        ── レッスン一覧 ──
+      <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '8px' }}>
+        レッスン一覧
       </div>
 
       {lessons.map((lesson, idx) => {
@@ -291,38 +290,38 @@ function StepLessonTab({ cfg, courseId, lessons, completed, onSelect }) {
             <div className="lesson-info">
               <div className="lesson-title">{idx + 1}. {lesson.title}</div>
               <div className="lesson-meta">
-                <span>🕐 {lesson.duration}</span>
+                <span>{lesson.duration}</span>
                 {done && (
-                  <span style={{ background: 'rgba(16,185,129,0.12)', color: '#065f46', padding: '1px 7px', borderRadius: '5px', fontSize: '11px', fontWeight: 700 }}>
-                    ✓ 完了済み
+                  <span style={{ background: 'var(--success-bg)', color: 'var(--success)', padding: '1px 6px', borderRadius: '4px', fontSize: '10px', fontWeight: 700 }}>
+                    完了
                   </span>
                 )}
                 {!done && isNext && (
-                  <span style={{ background: cfg.tagBg, color: cfg.tagColor, padding: '1px 7px', borderRadius: '5px', fontSize: '11px', fontWeight: 700 }}>
-                    ⭐ 次におすすめ
+                  <span style={{ background: 'var(--primary-light)', color: 'var(--primary)', padding: '1px 6px', borderRadius: '4px', fontSize: '10px', fontWeight: 700 }}>
+                    次のレッスン
                   </span>
                 )}
                 {!done && !isNext && (
-                  <span style={{ color: '#94a3b8', fontSize: '11px' }}>+50 XP</span>
+                  <span style={{ color: 'var(--text-muted)', fontSize: '11px' }}>+50 XP</span>
                 )}
               </div>
             </div>
             {done ? (
-              <span style={{ fontSize: '20px', color: '#10b981', flexShrink: 0 }}>✅</span>
+              <span style={{ fontSize: '16px', color: 'var(--success)', flexShrink: 0 }}>✓</span>
             ) : isNext ? (
               <span style={{
-                fontSize: '13px', fontWeight: 800, color: 'white',
-                background: cfg.color, padding: '6px 10px', borderRadius: '8px', flexShrink: 0,
+                fontSize: '12px', fontWeight: 700, color: 'white',
+                background: cfg.color, padding: '5px 10px', borderRadius: '6px', flexShrink: 0,
               }}>▶</span>
             ) : (
-              <span style={{ fontSize: '18px', color: '#94a3b8', flexShrink: 0 }}>›</span>
+              <span style={{ fontSize: '16px', color: 'var(--text-muted)', flexShrink: 0 }}>›</span>
             )}
           </button>
         );
       })}
 
-      <div style={{ textAlign: 'center', padding: '20px 0', color: '#94a3b8', fontSize: '12px' }}>
-        全{totalCount}レッスン • 合計{totalCount * 50} XP獲得可能
+      <div style={{ padding: '16px 0 4px', color: 'var(--text-muted)', fontSize: '11px', textAlign: 'center' }}>
+        {totalCount}レッスン · 最大 {totalCount * 50} XP
       </div>
     </div>
   );
@@ -362,25 +361,27 @@ export default function LearningScreen({
   return (
     <div>
       {/* Header */}
-      <div className="gradient-header" style={{ paddingBottom: '20px' }}>
+      <div className="gradient-header">
         <div style={{ position: 'relative', zIndex: 1 }}>
-          <h1>📚 学習コース</h1>
-          <p>STEP1〜6で、AIを使いこなすプロへ</p>
+          <h1>学習コース</h1>
+          <p>STEP 1〜6 でAIを実践的に習得する</p>
         </div>
       </div>
 
       {/* タブ横スクロール */}
       <div style={{
-        background: 'white', borderBottom: '1px solid #e2e8f0',
-        padding: '10px 12px 0', position: 'sticky', top: 0, zIndex: 20,
+        background: 'var(--surface)',
+        borderBottom: '1px solid var(--border)',
+        padding: '0 12px',
+        position: 'sticky', top: 0, zIndex: 20,
       }}>
         <div style={{
-          display: 'flex', gap: '5px', overflowX: 'auto',
-          scrollbarWidth: 'none', msOverflowStyle: 'none', paddingBottom: '0',
+          display: 'flex', gap: '0', overflowX: 'auto',
+          scrollbarWidth: 'none', msOverflowStyle: 'none',
         }}>
           {CORE_TABS.map((tab) => {
-            const isActive = activeTab === tab.key;
-            const count = counts[tab.key];
+            const isActive  = activeTab === tab.key;
+            const count     = counts[tab.key];
             const showCount = tab.stepNum !== null && tab.key !== 'step6' && tab.key !== 'library';
             const isLibrary = tab.key === 'library';
             return (
@@ -389,29 +390,30 @@ export default function LearningScreen({
                 onClick={() => setActiveTab(tab.key)}
                 style={{
                   flexShrink: 0,
-                  padding: isLibrary ? '8px 10px 10px' : '10px 12px 12px',
-                  borderRadius: '12px 12px 0 0',
+                  padding: isLibrary ? '10px 10px 11px' : '11px 10px 12px',
                   border: 'none',
                   borderBottom: isActive
-                    ? `3px solid ${tab.color}`
-                    : '3px solid transparent',
-                  background: isActive ? tab.colorBg : 'transparent',
-                  color: isActive ? tab.colorDark : isLibrary ? '#cbd5e1' : '#94a3b8',
-                  fontFamily: 'inherit', fontWeight: isActive ? 800 : 600,
+                    ? `2px solid ${tab.color}`
+                    : '2px solid transparent',
+                  background: 'transparent',
+                  color: isActive ? tab.color : isLibrary ? 'var(--border)' : 'var(--text-muted)',
+                  fontFamily: 'inherit',
+                  fontWeight: isActive ? 700 : 500,
                   fontSize: isLibrary ? '10px' : '11px',
                   cursor: 'pointer', textAlign: 'center',
-                  transition: 'all 0.2s', lineHeight: 1.3,
-                  minWidth: isLibrary ? '48px' : '52px',
+                  transition: 'color 0.15s, border-color 0.15s',
+                  lineHeight: 1.3,
+                  minWidth: isLibrary ? '44px' : '52px',
                 }}
               >
                 {!isLibrary && tab.stepNum !== null && (
-                  <div style={{ fontSize: '9px', opacity: isActive ? 0.75 : 0.55, marginBottom: '1px', fontWeight: 700 }}>
-                    STEP{tab.stepNum}
+                  <div style={{ fontSize: '9px', opacity: isActive ? 1 : 0.6, marginBottom: '2px', fontWeight: 700, letterSpacing: '0.3px' }}>
+                    S{tab.stepNum}
                   </div>
                 )}
-                <div>{tab.icon} {tab.label}</div>
+                <div style={{ fontSize: isLibrary ? '10px' : '11px' }}>{tab.label}</div>
                 {showCount && (
-                  <div style={{ fontSize: '10px', marginTop: '2px', opacity: 0.8 }}>
+                  <div style={{ fontSize: '10px', marginTop: '2px', opacity: 0.75 }}>
                     {count}/6
                   </div>
                 )}

@@ -135,7 +135,7 @@ export default function LessonDetailScreen({
                 {lesson.title}
               </h1>
               <div style={{ color: 'rgba(255,255,255,0.75)', fontSize: '12px', marginTop: '5px' }}>
-                🕐 {lesson.duration}{isCompleted && ' · ✅ 完了済み'}
+                {lesson.duration}{isCompleted && ' · 完了済み'}
               </div>
             </div>
           </div>
@@ -403,12 +403,16 @@ export default function LessonDetailScreen({
                   background: '#f8fafc', border: '1px solid #e2e8f0',
                   borderRadius: '12px', padding: '12px',
                   cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
+                  overflow: 'hidden', minWidth: 0,
                 }}
               >
                 <div style={{ fontSize: '10px', color: '#94a3b8', fontWeight: 600, marginBottom: '4px' }}>
                   ‹ 前のレッスン
                 </div>
-                <div style={{ fontSize: '12px', fontWeight: 700, color: '#1e293b', lineHeight: 1.4 }}>
+                <div style={{
+                  fontSize: '12px', fontWeight: 700, color: '#1e293b', lineHeight: 1.4,
+                  overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                }}>
                   {prevLesson.emoji} {prevLesson.title}
                 </div>
               </button>
@@ -420,12 +424,16 @@ export default function LessonDetailScreen({
                   background: color, border: 'none',
                   borderRadius: '12px', padding: '12px',
                   cursor: 'pointer', fontFamily: 'inherit', textAlign: 'right',
+                  overflow: 'hidden', minWidth: 0,
                 }}
               >
                 <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.75)', fontWeight: 600, marginBottom: '4px' }}>
                   次のレッスン ›
                 </div>
-                <div style={{ fontSize: '12px', fontWeight: 700, color: 'white', lineHeight: 1.4 }}>
+                <div style={{
+                  fontSize: '12px', fontWeight: 700, color: 'white', lineHeight: 1.4,
+                  overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                }}>
                   {nextLesson.emoji} {nextLesson.title}
                 </div>
               </button>
