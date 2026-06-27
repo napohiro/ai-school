@@ -4,7 +4,7 @@
   --secondary: #8b5cf6;
   --gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
   --gradient-light: linear-gradient(135deg, rgba(99,102,241,0.1) 0%, rgba(139,92,246,0.1) 100%);
-  --bg: #f8fafc;
+  --bg: #ffffff;
   --card-bg: #ffffff;
   --text-primary: #1e293b;
   --text-secondary: #64748b;
@@ -13,9 +13,9 @@
   --success: #10b981;
   --warning: #f59e0b;
   --error: #ef4444;
-  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
-  --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
-  --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.1);
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
@@ -37,7 +37,7 @@ html {
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', 'Noto Sans JP', 'Yu Gothic', sans-serif;
-  background: #e2e8f0;
+  background: #e8ecf0;
   color: var(--text-primary);
   line-height: 1.6;
   min-height: 100dvh;
@@ -626,3 +626,33 @@ textarea:focus { outline: none; border-color: var(--primary); background: white;
 }
 
 .link-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+
+/* ===== LESSON DETAIL (new) ===== */
+.lesson-detail { background: #fff; min-height: 100%; }
+
+/* ===== SECTION DIVIDER ===== */
+.section-divider {
+  height: 1px;
+  background: #f1f5f9;
+  margin: 20px 0;
+}
+
+/* ===== CARD MINIMAL ===== */
+.card-minimal {
+  background: #f8fafc;
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  border: 1px solid #f1f5f9;
+}
+
+/* Override card for new white-base design */
+.card {
+  background: var(--card-bg);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  box-shadow: none;
+  border: 1px solid var(--border);
+}
+
+/* Larger whitespace in sections */
+.section { padding: 20px 16px 0; }
