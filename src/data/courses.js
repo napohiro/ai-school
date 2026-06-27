@@ -154,9 +154,9 @@ export const COURSES = [
 export const ROADMAP_STAGES = [
   { id: 'step1', stepNum: 1, label: 'AI基礎',     emoji: '🤖', color: '#3b82f6', total: 6 },
   { id: 'step2', stepNum: 2, label: 'AI実践',     emoji: '💼', color: '#10b981', total: 6 },
-  { id: 'step3', stepNum: 3, label: 'クリエイト', emoji: '🎨', color: '#ec4899', total: 6 },
+  { id: 'step3', stepNum: 3, label: 'AIクリエイト', emoji: '🎨', color: '#ec4899', total: 6 },
   { id: 'step4', stepNum: 4, label: 'AI開発',     emoji: '💻', color: '#8b5cf6', total: 6 },
-  { id: 'step5', stepNum: 5, label: '収益化',     emoji: '💰', color: '#f59e0b', total: 6 },
+  { id: 'step5', stepNum: 5, label: 'AI収益化',   emoji: '💰', color: '#f59e0b', total: 6 },
   { id: 'step6', stepNum: 6, label: '卒業制作',   emoji: '🎓', color: '#eab308', total: 6 },
 ];
 

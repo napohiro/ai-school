@@ -3,9 +3,9 @@ import { ROADMAP_STAGES } from '../data/courses';
 const STEP_CONFIG = [
   { key: 'step1', completedKey: 'completedStep1', lessonsProp: 'lessonsStep1', navType: 'step1',    tabType: 'step1Tab', name: 'STEP1 AI基礎',    icon: '🤖', color: '#3b82f6', stepNum: 1 },
   { key: 'step2', completedKey: 'completedStep2', lessonsProp: 'lessonsStep2', navType: 'step2',    tabType: 'step2Tab', name: 'STEP2 AI実践',    icon: '💼', color: '#10b981', stepNum: 2 },
-  { key: 'step3', completedKey: 'completedStep3', lessonsProp: 'lessonsStep3', navType: 'step3',    tabType: 'step3Tab', name: 'STEP3 クリエイト', icon: '🎨', color: '#ec4899', stepNum: 3 },
+  { key: 'step3', completedKey: 'completedStep3', lessonsProp: 'lessonsStep3', navType: 'step3',    tabType: 'step3Tab', name: 'STEP3 AIクリエイト', icon: '🎨', color: '#ec4899', stepNum: 3 },
   { key: 'step4', completedKey: 'completedStep4', lessonsProp: 'lessonsStep4', navType: 'step4',    tabType: 'step4Tab', name: 'STEP4 AI開発',    icon: '💻', color: '#8b5cf6', stepNum: 4 },
-  { key: 'step5', completedKey: 'completedStep5', lessonsProp: 'lessonsStep5', navType: 'step5',    tabType: 'step5Tab', name: 'STEP5 収益化',    icon: '💰', color: '#f59e0b', stepNum: 5 },
+  { key: 'step5', completedKey: 'completedStep5', lessonsProp: 'lessonsStep5', navType: 'step5',    tabType: 'step5Tab', name: 'STEP5 AI収益化',  icon: '💰', color: '#f59e0b', stepNum: 5 },
 ];
 
 function getDoneCount(stepId, progress) {

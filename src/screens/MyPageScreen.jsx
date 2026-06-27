@@ -9,9 +9,9 @@ const MAIN_BADGES = MAIN_BADGE_IDS.map((id) => ({ id, ...BADGE_DEFS[id] })).filt
 const STEPS = [
   { key: 'completedStep1', label: 'STEP 1  AI基礎',    color: '#3b82f6' },
   { key: 'completedStep2', label: 'STEP 2  AI実践',    color: '#10b981' },
-  { key: 'completedStep3', label: 'STEP 3  クリエイト', color: '#ec4899' },
+  { key: 'completedStep3', label: 'STEP 3  AIクリエイト', color: '#ec4899' },
   { key: 'completedStep4', label: 'STEP 4  AI開発',    color: '#8b5cf6' },
-  { key: 'completedStep5', label: 'STEP 5  収益化',    color: '#f59e0b' },
+  { key: 'completedStep5', label: 'STEP 5  AI収益化',  color: '#f59e0b' },
 ];
 
 const TITLE_GUIDE = [
@@ -291,10 +291,15 @@ export default function MyPageScreen({
         )}
 
         {/* ── フッター ── */}
-        <div className="card" style={{ marginBottom: '14px', textAlign: 'center' }}>
-          <div style={{ fontSize: '12px', color: '#94a3b8', lineHeight: 1.8 }}>
-            <div style={{ fontWeight: 700, color: '#64748b', marginBottom: '2px' }}>🤖 AIスクール Ver.0.5.0</div>
-            <div>AIを武器に人生・仕事・ビジネスを変えるスクール</div>
+        <div className="card" style={{ marginBottom: '14px' }}>
+          <div style={{ fontSize: '13px', fontWeight: 700, color: '#1e293b', marginBottom: '8px' }}>
+            🤖 AIスクール Ver.1.0.0
+          </div>
+          <div style={{ fontSize: '11px', color: '#94a3b8', lineHeight: 1.9 }}>
+            <div>更新日：2026/06/27</div>
+            <div style={{ marginTop: '6px', color: '#64748b' }}>
+              AIスクールを6STEP構成に再設計。AI基礎、AI実践、AIクリエイト、AI開発、AI収益化、卒業制作まで学べる実践型学習アプリとして整理。UI/UXを改善し、スマホで迷わず学習できる構成に調整。
+            </div>
           </div>
         </div>
 
