@@ -372,33 +372,41 @@ export default function LearningScreen({
       {/* タブ横スクロール */}
       <div style={{
         background: 'white', borderBottom: '1px solid #e2e8f0',
-        padding: '10px 12px', position: 'sticky', top: 0, zIndex: 20,
+        padding: '10px 12px 0', position: 'sticky', top: 0, zIndex: 20,
       }}>
         <div style={{
-          display: 'flex', gap: '6px', overflowX: 'auto',
-          scrollbarWidth: 'none', msOverflowStyle: 'none', paddingBottom: '2px',
+          display: 'flex', gap: '5px', overflowX: 'auto',
+          scrollbarWidth: 'none', msOverflowStyle: 'none', paddingBottom: '0',
         }}>
           {CORE_TABS.map((tab) => {
             const isActive = activeTab === tab.key;
             const count = counts[tab.key];
-            const showCount = tab.stepNum !== null && tab.key !== 'step6';
+            const showCount = tab.stepNum !== null && tab.key !== 'step6' && tab.key !== 'library';
+            const isLibrary = tab.key === 'library';
             return (
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
                 style={{
-                  flexShrink: 0, padding: '7px 12px', borderRadius: '12px',
-                  border: isActive ? `2px solid ${tab.color}` : '2px solid #e2e8f0',
-                  background: isActive ? tab.colorBg : 'white',
-                  color: isActive ? tab.colorDark : '#94a3b8',
+                  flexShrink: 0,
+                  padding: isLibrary ? '8px 10px 10px' : '10px 12px 12px',
+                  borderRadius: '12px 12px 0 0',
+                  border: 'none',
+                  borderBottom: isActive
+                    ? `3px solid ${tab.color}`
+                    : '3px solid transparent',
+                  background: isActive ? tab.colorBg : 'transparent',
+                  color: isActive ? tab.colorDark : isLibrary ? '#cbd5e1' : '#94a3b8',
                   fontFamily: 'inherit', fontWeight: isActive ? 800 : 600,
-                  fontSize: '11px', cursor: 'pointer', textAlign: 'center',
-                  transition: 'all 0.2s', lineHeight: 1.3, minWidth: '52px',
+                  fontSize: isLibrary ? '10px' : '11px',
+                  cursor: 'pointer', textAlign: 'center',
+                  transition: 'all 0.2s', lineHeight: 1.3,
+                  minWidth: isLibrary ? '48px' : '52px',
                 }}
               >
-                {tab.stepNum !== null && (
-                  <div style={{ fontSize: '9px', opacity: 0.7, marginBottom: '1px' }}>
-                    {tab.key === 'library' ? '' : `STEP${tab.stepNum}`}
+                {!isLibrary && tab.stepNum !== null && (
+                  <div style={{ fontSize: '9px', opacity: isActive ? 0.75 : 0.55, marginBottom: '1px', fontWeight: 700 }}>
+                    STEP{tab.stepNum}
                   </div>
                 )}
                 <div>{tab.icon} {tab.label}</div>

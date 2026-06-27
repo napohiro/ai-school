@@ -136,8 +136,8 @@ body {
 .card {
   background: var(--card-bg);
   border-radius: var(--radius-lg);
-  padding: 16px;
-  box-shadow: var(--shadow-sm);
+  padding: 18px;
+  box-shadow: none;
   border: 1px solid var(--border);
 }
 
@@ -185,10 +185,12 @@ body {
 /* ===== SECTION ===== */
 .section { padding: 16px 16px 0; }
 .section-title {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: 12px;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text-muted);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -226,13 +228,13 @@ body {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 14px;
+  padding: 14px 16px;
   background: white;
   border-radius: var(--radius-lg);
   border: 1px solid var(--border);
   cursor: pointer;
   transition: all 0.2s ease;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
   width: 100%;
   text-align: left;
   font-family: inherit;
@@ -645,14 +647,5 @@ textarea:focus { outline: none; border-color: var(--primary); background: white;
   border: 1px solid #f1f5f9;
 }
 
-/* Override card for new white-base design */
-.card {
-  background: var(--card-bg);
-  border-radius: var(--radius-lg);
-  padding: 16px;
-  box-shadow: none;
-  border: 1px solid var(--border);
-}
-
 /* Larger whitespace in sections */
-.section { padding: 20px 16px 0; }
+.section { padding: 20px 20px 0; }

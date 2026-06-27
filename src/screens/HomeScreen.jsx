@@ -340,28 +340,6 @@ export default function HomeScreen({
         </div>
       </div>
 
-      {/* ── ロードマップリンク ── */}
-      {!all5StepsDone && (
-        <div style={{ padding: '16px 16px 0' }}>
-          <div
-            onClick={() => onNavigate('home', { type: 'roadmap' })}
-            style={{
-              background: '#0f172a', borderRadius: '14px', padding: '14px 16px',
-              display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer',
-            }}
-          >
-            <span style={{ fontSize: '22px' }}>🗺️</span>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontWeight: 700, fontSize: '14px', color: 'white' }}>全体ロードマップを見る</div>
-              <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.55)', marginTop: '2px' }}>
-                STEP1→2→3→4→5→卒業制作
-              </div>
-            </div>
-            <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '18px' }}>›</span>
-          </div>
-        </div>
-      )}
-
       <div style={{ height: '24px' }} />
     </div>
   );
