@@ -2,17 +2,19 @@ import { BADGE_DEFS } from '../hooks/useProgress';
 import { ROADMAP_STAGES } from '../data/courses';
 
 const MAIN_BADGE_IDS = [
-  'beginner_complete', 'advanced_complete', 'expert_complete', 'practice_complete',
-  'monetization_complete', 'graduation_submitted', 'all_graduate',
+  'step1_complete', 'step2_complete', 'step3_complete', 'step4_complete',
+  'step5_complete', 'practice_complete', 'all_graduate',
 ];
 
-const MAIN_BADGES = MAIN_BADGE_IDS.map((id) => ({ id, ...BADGE_DEFS[id] }));
+const MAIN_BADGES = MAIN_BADGE_IDS.map((id) => ({ id, ...BADGE_DEFS[id] })).filter((b) => b.emoji);
 
 const COURSE_CARDS = [
-  { key: 'beginner', label: '基礎',  icon: '📗', color: '#3b82f6', colorBg: 'rgba(59,130,246,0.08)',  desc: '12レッスン', total: 12 },
-  { key: 'advanced', label: '活用',  icon: '📘', color: '#10b981', colorBg: 'rgba(16,185,129,0.08)',  desc: '12レッスン', total: 12 },
-  { key: 'expert',   label: '開発',  icon: '📙', color: '#8b5cf6', colorBg: 'rgba(139,92,246,0.08)',  desc: '12レッスン', total: 12 },
-  { key: 'mission',  label: '実践',  icon: '⚡',  color: '#f59e0b', colorBg: 'rgba(245,158,11,0.08)',  desc: '6ミッション', total: 6 },
+  { key: 'step1', label: 'S1基礎',  icon: '🤖', color: '#3b82f6', colorBg: 'rgba(59,130,246,0.08)', desc: '6レッスン', total: 6 },
+  { key: 'step2', label: 'S2実践',  icon: '💼', color: '#10b981', colorBg: 'rgba(16,185,129,0.08)', desc: '6レッスン', total: 6 },
+  { key: 'step3', label: 'S3作成',  icon: '🎨', color: '#ec4899', colorBg: 'rgba(236,72,153,0.08)', desc: '6レッスン', total: 6 },
+  { key: 'step4', label: 'S4開発',  icon: '💻', color: '#8b5cf6', colorBg: 'rgba(139,92,246,0.08)', desc: '6レッスン', total: 6 },
+  { key: 'step5', label: 'S5収益',  icon: '💰', color: '#f59e0b', colorBg: 'rgba(245,158,11,0.08)', desc: '6レッスン', total: 6 },
+  { key: 'mission', label: '実践',  icon: '⚡', color: '#f59e0b', colorBg: 'rgba(245,158,11,0.08)', desc: '6ミッション', total: 6 },
 ];
 
 const TITLE_GUIDE = [
@@ -34,20 +36,24 @@ export default function MyPageScreen({ progress, getLevel, getLevelProgress, get
   const totalPct = getTotalProgress();
   const graduated = isGraduated ? isGraduated() : false;
 
-  const expertDone   = (progress.completedExpertLessons || []).length;
-  const advancedDone = (progress.completedAdvancedLessons || []).length;
-  const missionDone  = progress.completedMissions.length;
-  const beginnerDone = progress.completedLessons.length;
+  const step1Done  = (progress.completedStep1 || []).length;
+  const step2Done  = (progress.completedStep2 || []).length;
+  const step3Done  = (progress.completedStep3 || []).length;
+  const step4Done  = (progress.completedStep4 || []).length;
+  const step5Done  = (progress.completedStep5 || []).length;
+  const missionDone = (progress.completedMissions || []).length;
 
   const doneCounts = {
-    beginner: beginnerDone,
-    advanced: advancedDone,
-    expert:   expertDone,
-    mission:  missionDone,
+    step1: step1Done,
+    step2: step2Done,
+    step3: step3Done,
+    step4: step4Done,
+    step5: step5Done,
+    mission: missionDone,
   };
 
-  const totalCompleted = beginnerDone + advancedDone + expertDone + missionDone;
-  const memoEntries = Object.entries(progress.missionMemos).filter(([, memo]) => memo && memo.trim());
+  const totalCompleted = step1Done + step2Done + step3Done + step4Done + step5Done + missionDone;
+  const memoEntries = Object.entries(progress.missionMemos || {}).filter(([, memo]) => memo && memo.trim());
 
   const currentTitleEntry = TITLE_GUIDE.find((t) => titleInfo && t.displayLevel === titleInfo.displayLevel);
   const nextTitleEntry = currentTitleEntry?.nextXp
@@ -274,21 +280,10 @@ export default function MyPageScreen({ progress, getLevel, getLevelProgress, get
           <div className="card">
             {ROADMAP_STAGES.map((stage, i) => {
               const done = (() => {
-                switch (stage.id) {
-                  case 'beginner':  return beginnerDone;
-                  case 'advanced':  return advancedDone;
-                  case 'expert':    return expertDone;
-                  case 'practice':  return missionDone;
-                  default:          return 0;
-                }
+                const map = { step1: step1Done, step2: step2Done, step3: step3Done, step4: step4Done, step5: step5Done };
+                return map[stage.id] || 0;
               })();
-              const total = (() => {
-                switch (stage.id) {
-                  case 'beginner': case 'advanced': case 'expert': return 12;
-                  case 'practice': return 6;
-                  default: return null;
-                }
-              })();
+              const total = stage.id === 'step6' ? null : 6;
               const isCore = total !== null;
               const isComplete = isCore && done >= total;
               const isActive = isCore && done > 0 && !isComplete;

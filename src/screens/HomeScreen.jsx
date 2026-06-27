@@ -1,29 +1,31 @@
 import { ROADMAP_STAGES } from '../data/courses';
 
-function getDoneCount(courseId, progress) {
-  switch (courseId) {
-    case 'beginner':  return progress.completedLessons.length;
-    case 'advanced':  return (progress.completedAdvancedLessons || []).length;
-    case 'expert':    return (progress.completedExpertLessons || []).length;
-    case 'practice':  return progress.completedMissions.length;
-    default:          return 0;
-  }
+const STEP_CONFIG = [
+  { key: 'step1', completedKey: 'completedStep1', lessonsProp: 'lessonsStep1', navType: 'step1',    tabType: 'step1Tab', name: 'STEP1 AI基礎',    icon: '🤖', color: '#3b82f6', stepNum: 1 },
+  { key: 'step2', completedKey: 'completedStep2', lessonsProp: 'lessonsStep2', navType: 'step2',    tabType: 'step2Tab', name: 'STEP2 AI実践',    icon: '💼', color: '#10b981', stepNum: 2 },
+  { key: 'step3', completedKey: 'completedStep3', lessonsProp: 'lessonsStep3', navType: 'step3',    tabType: 'step3Tab', name: 'STEP3 クリエイト', icon: '🎨', color: '#ec4899', stepNum: 3 },
+  { key: 'step4', completedKey: 'completedStep4', lessonsProp: 'lessonsStep4', navType: 'step4',    tabType: 'step4Tab', name: 'STEP4 AI開発',    icon: '💻', color: '#8b5cf6', stepNum: 4 },
+  { key: 'step5', completedKey: 'completedStep5', lessonsProp: 'lessonsStep5', navType: 'step5',    tabType: 'step5Tab', name: 'STEP5 収益化',    icon: '💰', color: '#f59e0b', stepNum: 5 },
+];
+
+function getDoneCount(stepId, progress) {
+  const map = {
+    step1: progress.completedStep1?.length || 0,
+    step2: progress.completedStep2?.length || 0,
+    step3: progress.completedStep3?.length || 0,
+    step4: progress.completedStep4?.length || 0,
+    step5: progress.completedStep5?.length || 0,
+    step6: 0,
+  };
+  return map[stepId] || 0;
 }
 
-function getCourseTotal(courseId) {
-  switch (courseId) {
-    case 'beginner': case 'advanced': case 'expert': return 12;
-    case 'practice': return 6;
-    default:         return 0;
-  }
-}
-
-function StageBar({ label, done, total, color }) {
+function StageBar({ label, done, total }) {
   const blocks = 6;
   const filled = total > 0 ? Math.round((done / total) * blocks) : 0;
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-      <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.7)', fontWeight: 600, width: '22px' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+      <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.65)', fontWeight: 700, width: '20px', letterSpacing: '0px' }}>
         {label}
       </span>
       <div style={{ display: 'flex', gap: '2px' }}>
@@ -31,8 +33,8 @@ function StageBar({ label, done, total, color }) {
           <div
             key={i}
             style={{
-              width: 8, height: 8, borderRadius: '2px',
-              background: i < filled ? 'white' : 'rgba(255,255,255,0.25)',
+              width: 7, height: 7, borderRadius: '2px',
+              background: i < filled ? 'white' : 'rgba(255,255,255,0.22)',
             }}
           />
         ))}
@@ -48,47 +50,53 @@ export default function HomeScreen({
   getTotalProgress,
   getNextLesson,
   getTitle,
-  lessons,
-  lessonsAdvanced,
-  lessonsExpert,
+  lessonsStep1,
+  lessonsStep2,
+  lessonsStep3,
+  lessonsStep4,
+  lessonsStep5,
   missions,
   onNavigate,
 }) {
   const levelInfo = getLevel();
   const levelPct = getLevelProgress();
 
-  const completedAdvanced = progress.completedAdvancedLessons || [];
-  const completedExpert   = progress.completedExpertLessons   || [];
+  const allStepLessons = {
+    lessonsStep1, lessonsStep2, lessonsStep3, lessonsStep4, lessonsStep5,
+  };
 
-  const nextLesson         = getNextLesson(lessons);
-  const nextAdvancedLesson = (lessonsAdvanced || []).find(l => !completedAdvanced.includes(l.id));
-  const nextExpertLesson   = (lessonsExpert   || []).find(l => !completedExpert.includes(l.id));
-  const nextMission        = missions.find(m => !progress.completedMissions.includes(m.id));
+  const stepDone = {
+    step1: progress.completedStep1?.length || 0,
+    step2: progress.completedStep2?.length || 0,
+    step3: progress.completedStep3?.length || 0,
+    step4: progress.completedStep4?.length || 0,
+    step5: progress.completedStep5?.length || 0,
+  };
 
-  const beginnerDone = progress.completedLessons.length;
-  const advancedDone = completedAdvanced.length;
-  const expertDone   = completedExpert.length;
-  const missionDone  = progress.completedMissions.length;
+  const missionDone = progress.completedMissions?.length || 0;
 
-  const currentCourse =
-    beginnerDone < 12 ? 'beginner' :
-    advancedDone < 12 ? 'advanced' :
-    expertDone   < 12 ? 'expert'   : 'practice';
+  // Find the current active STEP (first not completed)
+  const currentStepCfg = STEP_CONFIG.find((s) => {
+    const done = stepDone[s.key];
+    return done < 6;
+  }) || null;
 
-  const primaryLesson = nextLesson || nextAdvancedLesson || nextExpertLesson;
-  const primaryCourse = nextLesson
-    ? { name: '基礎編', icon: '📗', color: '#3b82f6', done: beginnerDone, type: 'lesson',        tabType: 'beginner',  max: 12 }
-    : nextAdvancedLesson
-    ? { name: '活用編', icon: '📘', color: '#10b981', done: advancedDone, type: 'advancedLesson', tabType: 'advanced',  max: 12 }
-    : nextExpertLesson
-    ? { name: '開発編', icon: '📙', color: '#8b5cf6', done: expertDone,   type: 'expertLesson',   tabType: 'expert',    max: 12 }
-    : null;
+  // Find next lesson across steps
+  let primaryLesson = null;
+  let primaryStepCfg = null;
+  for (const stepCfg of STEP_CONFIG) {
+    const lessons = allStepLessons[stepCfg.lessonsProp] || [];
+    const completed = progress[stepCfg.completedKey] || [];
+    const next = lessons.find((l) => !completed.includes(l.id));
+    if (next) {
+      primaryLesson = next;
+      primaryStepCfg = stepCfg;
+      break;
+    }
+  }
 
-  const stageIdx    = ROADMAP_STAGES.findIndex(s => s.id === currentCourse);
-  const totalCurrent = getCourseTotal(currentCourse);
-  const doneCurrent  = getDoneCount(currentCourse, progress);
-
-  const coreCompleted = beginnerDone >= 12 && advancedDone >= 12 && expertDone >= 12 && missionDone >= 6;
+  const nextMission = missions?.find((m) => !progress.completedMissions?.includes(m.id));
+  const all5StepsDone = STEP_CONFIG.every((s) => stepDone[s.key] >= 6);
 
   return (
     <div style={{ background: '#fff', minHeight: '100%' }}>
@@ -106,7 +114,7 @@ export default function HomeScreen({
           pointerEvents: 'none',
         }} />
 
-        {/* Top row: title + level */}
+        {/* Top row: title + stage progress */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative', zIndex: 1, marginBottom: '16px' }}>
           <div>
             <div style={{ fontSize: '20px', fontWeight: 900, color: 'white', letterSpacing: '-0.3px' }}>
@@ -120,13 +128,18 @@ export default function HomeScreen({
             background: 'rgba(255,255,255,0.18)', border: '1px solid rgba(255,255,255,0.25)',
             borderRadius: '12px', padding: '8px 12px', textAlign: 'right',
           }}>
-            <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.7)', fontWeight: 600, marginBottom: '4px' }}>
+            <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.65)', fontWeight: 700, marginBottom: '5px', letterSpacing: '0.5px' }}>
               現在地
             </div>
-            <StageBar label="初" done={beginnerDone} total={12} />
-            <StageBar label="活" done={advancedDone} total={12} />
-            <StageBar label="開" done={expertDone}   total={12} />
-            <StageBar label="実" done={missionDone}  total={6}  />
+            <StageBar label="S1" done={stepDone.step1} total={6} />
+            <div style={{ height: '3px' }} />
+            <StageBar label="S2" done={stepDone.step2} total={6} />
+            <div style={{ height: '3px' }} />
+            <StageBar label="S3" done={stepDone.step3} total={6} />
+            <div style={{ height: '3px' }} />
+            <StageBar label="S4" done={stepDone.step4} total={6} />
+            <div style={{ height: '3px' }} />
+            <StageBar label="S5" done={stepDone.step5} total={6} />
           </div>
         </div>
 
@@ -155,31 +168,28 @@ export default function HomeScreen({
         </div>
       </div>
 
-      {/* ── 次にやること（最優先） ── */}
+      {/* ── 次にやること ── */}
       <div style={{ padding: '20px 16px 0' }}>
         <div style={{ fontSize: '11px', fontWeight: 800, color: '#94a3b8', letterSpacing: '0.5px', textTransform: 'uppercase', marginBottom: '12px' }}>
           次にやること
         </div>
 
-        {primaryLesson && primaryCourse ? (
+        {primaryLesson && primaryStepCfg ? (
           <div style={{
-            border: `2px solid ${primaryCourse.color}`,
+            border: `2px solid ${primaryStepCfg.color}`,
             borderRadius: '16px', overflow: 'hidden',
           }}>
-            {/* Course tag */}
             <div style={{
-              background: primaryCourse.color, padding: '8px 14px',
+              background: primaryStepCfg.color, padding: '8px 14px',
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             }}>
               <span style={{ color: 'white', fontSize: '12px', fontWeight: 700 }}>
-                {primaryCourse.icon} {primaryCourse.name}
+                {primaryStepCfg.icon} {primaryStepCfg.name}
               </span>
               <span style={{ color: 'rgba(255,255,255,0.8)', fontSize: '11px', fontWeight: 600 }}>
-                {primaryCourse.done}/{primaryCourse.max} 完了
+                {stepDone[primaryStepCfg.key]}/6 完了
               </span>
             </div>
-
-            {/* Lesson info */}
             <div style={{ padding: '16px', background: 'white' }}>
               <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '14px' }}>
                 <span style={{ fontSize: '36px', lineHeight: 1 }}>{primaryLesson.emoji}</span>
@@ -192,82 +202,59 @@ export default function HomeScreen({
                   </div>
                 </div>
               </div>
-
-              {/* Progress bar */}
               <div style={{ marginBottom: '14px' }}>
                 <div style={{ height: '4px', borderRadius: '99px', background: '#e2e8f0', overflow: 'hidden' }}>
                   <div style={{
-                    height: '100%', borderRadius: '99px', background: primaryCourse.color,
-                    width: `${Math.round((primaryCourse.done / primaryCourse.max) * 100)}%`,
+                    height: '100%', borderRadius: '99px', background: primaryStepCfg.color,
+                    width: `${Math.round((stepDone[primaryStepCfg.key] / 6) * 100)}%`,
                     transition: 'width 0.5s ease', minWidth: '4px',
                   }} />
                 </div>
               </div>
-
               <button
                 style={{
                   width: '100%', padding: '14px', border: 'none', borderRadius: '12px',
-                  background: primaryCourse.color, color: 'white', fontFamily: 'inherit',
+                  background: primaryStepCfg.color, color: 'white', fontFamily: 'inherit',
                   fontWeight: 800, fontSize: '15px', cursor: 'pointer',
-                  boxShadow: `0 4px 14px ${primaryCourse.color}40`,
+                  boxShadow: `0 4px 14px ${primaryStepCfg.color}40`,
                 }}
-                onClick={() => onNavigate('learning', { type: primaryCourse.type, id: primaryLesson.id })}
+                onClick={() => onNavigate('learning', { type: primaryStepCfg.navType, id: primaryLesson.id })}
               >
                 ▶ 続きを学ぶ
               </button>
             </div>
           </div>
-        ) : nextMission ? (
-          <div
-            style={{
-              border: '2px solid #f59e0b', borderRadius: '16px', overflow: 'hidden',
-              cursor: 'pointer',
-            }}
-            onClick={() => onNavigate('practice', { type: 'mission', id: nextMission.id })}
-          >
-            <div style={{
-              background: '#f59e0b', padding: '8px 14px',
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            }}>
-              <span style={{ color: 'white', fontSize: '12px', fontWeight: 700 }}>⚡ 実践編</span>
-              <span style={{ color: 'rgba(255,255,255,0.8)', fontSize: '11px', fontWeight: 600 }}>
-                {missionDone}/6 完了
-              </span>
-            </div>
-            <div style={{ padding: '16px', background: 'white' }}>
-              <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                <span style={{ fontSize: '36px' }}>{nextMission.emoji}</span>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 800, fontSize: '16px', color: '#1e293b', marginBottom: '4px' }}>
-                    {nextMission.title}
-                  </div>
-                  <div style={{ fontSize: '12px', color: '#64748b' }}>{nextMission.description}</div>
-                </div>
-                <span style={{ color: '#f59e0b', fontSize: '20px' }}>›</span>
-              </div>
-            </div>
-          </div>
-        ) : (
+        ) : all5StepsDone ? (
           <div style={{
             background: '#f0fdf4', border: '2px solid #86efac',
             borderRadius: '16px', padding: '24px', textAlign: 'center',
           }}>
             <div style={{ fontSize: '48px', marginBottom: '12px' }}>🏆</div>
             <div style={{ fontWeight: 800, fontSize: '16px', color: '#065f46', marginBottom: '6px' }}>
-              コアレッスン完了！おめでとう！
+              STEP1〜5完了！おめでとう！
             </div>
-            <div style={{ fontSize: '13px', color: '#64748b' }}>
-              次は収益化編や卒業制作に挑戦しよう
+            <div style={{ fontSize: '13px', color: '#64748b', marginBottom: '16px' }}>
+              次は卒業制作でAIサービスを公開しよう
             </div>
+            <button
+              style={{
+                padding: '12px 24px', border: 'none', borderRadius: '12px',
+                background: '#eab308', color: 'white', fontFamily: 'inherit',
+                fontWeight: 800, fontSize: '14px', cursor: 'pointer',
+              }}
+              onClick={() => onNavigate('learning', { type: 'step6Tab' })}
+            >
+              🎓 卒業制作を始める
+            </button>
           </div>
-        )}
+        ) : null}
       </div>
 
-      {/* ── 卒業までの流れ（コンパクト） ── */}
+      {/* ── ロードマップ ── */}
       <div style={{ padding: '20px 16px 0' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
           <div style={{ fontSize: '11px', fontWeight: 800, color: '#94a3b8', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
-            卒業までの流れ
+            学習ロードマップ
           </div>
           <button
             onClick={() => onNavigate('home', { type: 'roadmap' })}
@@ -282,11 +269,11 @@ export default function HomeScreen({
 
         <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '4px', scrollbarWidth: 'none' }}>
           {ROADMAP_STAGES.map((stage, idx) => {
-            const done  = getDoneCount(stage.id, progress);
-            const total = getCourseTotal(stage.id);
-            const isFuture    = ['monetization', 'graduation'].includes(stage.id);
-            const isCompleted = !isFuture && total > 0 && done >= total;
-            const isActive    = stage.id === currentCourse && !isFuture;
+            const done = getDoneCount(stage.id, progress);
+            const total = stage.total;
+            const isCompleted = total > 0 && done >= total;
+            const isGrad = stage.id === 'step6';
+            const isActive = !isGrad && !isCompleted && currentStepCfg?.key === stage.id;
 
             return (
               <div key={stage.id} style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
@@ -295,16 +282,15 @@ export default function HomeScreen({
                 )}
                 <div
                   onClick={() => {
-                    if (isFuture) return;
-                    if (stage.id === 'practice') { onNavigate('practice'); return; }
-                    onNavigate('learning', { type: stage.id + 'Tab' });
+                    if (isGrad) { onNavigate('learning', { type: 'step6Tab' }); return; }
+                    onNavigate('learning', { type: `${stage.id}Tab` });
                   }}
                   style={{
                     minWidth: '60px',
-                    background: isActive ? stage.color : isCompleted ? `${stage.color}15` : isFuture ? '#f8fafc' : 'white',
+                    background: isActive ? stage.color : isCompleted ? `${stage.color}15` : isGrad ? '#f8fafc' : 'white',
                     border: `1.5px solid ${isActive ? stage.color : isCompleted ? `${stage.color}50` : '#e2e8f0'}`,
                     borderRadius: '12px', padding: '8px 4px',
-                    textAlign: 'center', cursor: isFuture ? 'default' : 'pointer',
+                    textAlign: 'center', cursor: 'pointer',
                   }}
                 >
                   <div style={{ fontSize: '15px', marginBottom: '2px' }}>
@@ -312,16 +298,16 @@ export default function HomeScreen({
                   </div>
                   <div style={{
                     fontSize: '9px', fontWeight: 800,
-                    color: isActive ? 'white' : isCompleted ? stage.color : isFuture ? '#cbd5e1' : '#64748b',
+                    color: isActive ? 'white' : isCompleted ? stage.color : isGrad ? '#cbd5e1' : '#64748b',
                   }}>
                     {stage.label}
                   </div>
-                  {!isFuture && total > 0 && (
+                  {!isGrad && total > 0 && (
                     <div style={{ fontSize: '9px', color: isActive ? 'rgba(255,255,255,0.75)' : '#94a3b8', marginTop: '1px' }}>
                       {done}/{total}
                     </div>
                   )}
-                  {isFuture && <div style={{ fontSize: '9px', color: '#cbd5e1', marginTop: '1px' }}>🔒</div>}
+                  {isGrad && <div style={{ fontSize: '9px', color: '#cbd5e1', marginTop: '1px' }}>🔒</div>}
                 </div>
               </div>
             );
@@ -330,28 +316,23 @@ export default function HomeScreen({
       </div>
 
       {/* ── 進捗サマリー ── */}
-      <div style={{ padding: '20px 16px 0' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '8px' }}>
-          {[
-            { label: '基礎', value: beginnerDone, max: 12, color: '#3b82f6' },
-            { label: '活用', value: advancedDone, max: 12, color: '#10b981' },
-            { label: '開発', value: expertDone,   max: 12, color: '#8b5cf6' },
-            { label: '実践', value: missionDone,  max: 6,  color: '#f59e0b' },
-          ].map(item => (
-            <div key={item.label} style={{
+      <div style={{ padding: '16px 16px 0' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr', gap: '6px' }}>
+          {STEP_CONFIG.map((s) => (
+            <div key={s.key} style={{
               background: '#f8fafc', border: '1px solid #e2e8f0',
-              borderRadius: '12px', padding: '12px 6px', textAlign: 'center',
+              borderRadius: '10px', padding: '10px 4px', textAlign: 'center',
             }}>
-              <div style={{ fontSize: '18px', fontWeight: 900, color: item.color }}>
-                {item.value}
+              <div style={{ fontSize: '16px', fontWeight: 900, color: s.color }}>
+                {stepDone[s.key]}
               </div>
-              <div style={{ fontSize: '9px', color: '#94a3b8', fontWeight: 600, marginTop: '2px' }}>
-                / {item.max} {item.label}
+              <div style={{ fontSize: '8px', color: '#94a3b8', fontWeight: 600, marginTop: '2px' }}>
+                / 6 S{s.stepNum}
               </div>
-              <div style={{ height: '3px', borderRadius: '99px', background: '#e2e8f0', overflow: 'hidden', marginTop: '6px' }}>
+              <div style={{ height: '3px', borderRadius: '99px', background: '#e2e8f0', overflow: 'hidden', marginTop: '5px' }}>
                 <div style={{
-                  height: '100%', borderRadius: '99px', background: item.color,
-                  width: `${Math.round((item.value / item.max) * 100)}%`,
+                  height: '100%', borderRadius: '99px', background: s.color,
+                  width: `${Math.round((stepDone[s.key] / 6) * 100)}%`,
                 }} />
               </div>
             </div>
@@ -359,37 +340,8 @@ export default function HomeScreen({
         </div>
       </div>
 
-      {/* ── コア完了後：次のステージへ ── */}
-      {coreCompleted && (
-        <div style={{ padding: '20px 16px 0' }}>
-          <div style={{ fontSize: '11px', fontWeight: 800, color: '#94a3b8', letterSpacing: '0.5px', textTransform: 'uppercase', marginBottom: '12px' }}>
-            次のステージへ
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-            {[
-              { id: 'monetization', name: '収益化編', emoji: '💰', color: '#ec4899', sub: 'AIで収益導線を作る', tabType: 'monetizationTab' },
-              { id: 'graduation',   name: '卒業制作', emoji: '🎓', color: '#eab308', sub: '自分のAIサービスを公開', tabType: 'graduationTab' },
-            ].map(course => (
-              <div
-                key={course.id}
-                onClick={() => onNavigate('learning', { type: course.tabType })}
-                style={{
-                  background: `linear-gradient(135deg, ${course.color}10 0%, white 100%)`,
-                  border: `1.5px solid ${course.color}30`, borderRadius: '14px',
-                  padding: '16px', cursor: 'pointer',
-                }}
-              >
-                <div style={{ fontSize: '26px', marginBottom: '8px' }}>{course.emoji}</div>
-                <div style={{ fontWeight: 800, fontSize: '13px', color: '#1e293b', marginBottom: '4px' }}>{course.name}</div>
-                <div style={{ fontSize: '11px', color: '#64748b', lineHeight: 1.5 }}>{course.sub}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* ── ロードマップへのリンク ── */}
-      {!coreCompleted && (
+      {/* ── ロードマップリンク ── */}
+      {!all5StepsDone && (
         <div style={{ padding: '16px 16px 0' }}>
           <div
             onClick={() => onNavigate('home', { type: 'roadmap' })}
@@ -402,7 +354,7 @@ export default function HomeScreen({
             <div style={{ flex: 1 }}>
               <div style={{ fontWeight: 700, fontSize: '14px', color: 'white' }}>全体ロードマップを見る</div>
               <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.55)', marginTop: '2px' }}>
-                基礎→活用→開発→実践→収益化→卒業
+                STEP1→2→3→4→5→卒業制作
               </div>
             </div>
             <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '18px' }}>›</span>

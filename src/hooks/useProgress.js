@@ -1,12 +1,14 @@
 import { useState } from 'react';
 
-const STORAGE_KEY = 'ai-school-progress-v1';
+const STORAGE_KEY = 'ai-school-v2';
 
 const INITIAL_STATE = {
-  completedLessons: [],
+  completedStep1: [],
+  completedStep2: [],
+  completedStep3: [],
+  completedStep4: [],
+  completedStep5: [],
   completedMissions: [],
-  completedAdvancedLessons: [],
-  completedExpertLessons: [],
   xp: 0,
   missionMemos: {},
   badges: [],
@@ -14,20 +16,17 @@ const INITIAL_STATE = {
   quizResults: {},
 };
 
-// hidden: true のバッジはUIに表示しない（LocalStorage互換のために残す）
 const BADGES = {
-  first_lesson:          { emoji: '⭐', name: 'はじめての一歩',   desc: '初レッスン完了',    hidden: true },
-  three_lessons:         { emoji: '🌟', name: '3レッスン達成',    desc: '3レッスン完了',     hidden: true },
-  first_mission:         { emoji: '⚡', name: '初実践クリア',     desc: '初ミッション達成',   hidden: true },
-  ai_doctor:             { emoji: '🔍', name: 'AI探求者',        desc: '5レッスン達成',     hidden: true },
-  // メインバッジ（表示する7種）
-  beginner_complete:     { emoji: '📗', name: '基礎修了',         desc: '基礎編 全レッスン完了' },
-  advanced_complete:     { emoji: '📘', name: '活用修了',         desc: '活用編 全レッスン完了' },
-  expert_complete:       { emoji: '📙', name: '開発修了',         desc: '開発編 全レッスン完了' },
-  practice_complete:     { emoji: '⚡', name: '実践修了',         desc: '実践編 全ミッション完了' },
-  monetization_complete: { emoji: '💰', name: '収益化修了',       desc: '収益化編 全レッスン完了' },
-  graduation_submitted:  { emoji: '🎓', name: '卒業制作提出',     desc: '卒業制作を完成・提出' },
-  all_graduate:          { emoji: '👑', name: 'AIスクール修了',   desc: '基礎〜実践を全て修了' },
+  first_lesson:    { emoji: '⭐', name: 'はじめての一歩', desc: '初レッスン完了',    hidden: true },
+  three_lessons:   { emoji: '🌟', name: '3レッスン達成',  desc: '3レッスン完了',     hidden: true },
+  first_mission:   { emoji: '⚡', name: '初実践クリア',   desc: '初ミッション達成',   hidden: true },
+  step1_complete:  { emoji: '🤖', name: 'AI基礎修了',     desc: 'STEP1全レッスン完了' },
+  step2_complete:  { emoji: '💼', name: 'AI実践修了',     desc: 'STEP2全レッスン完了' },
+  step3_complete:  { emoji: '🎨', name: 'クリエイト修了', desc: 'STEP3全レッスン完了' },
+  step4_complete:  { emoji: '💻', name: 'AI開発修了',     desc: 'STEP4全レッスン完了' },
+  step5_complete:  { emoji: '💰', name: '収益化修了',     desc: 'STEP5全レッスン完了' },
+  practice_complete: { emoji: '⚡', name: '実践修了',     desc: '全ミッション完了' },
+  all_graduate:    { emoji: '👑', name: 'AIスクール修了', desc: 'STEP1〜5を全て修了' },
 };
 
 export const BADGE_DEFS = BADGES;
@@ -53,12 +52,21 @@ function saveToStorage(state) {
   }
 }
 
-function detectProgressBadges(prevBadges, lessons, missions) {
+function getTotalCompleted(prog) {
+  return (
+    prog.completedStep1.length +
+    prog.completedStep2.length +
+    prog.completedStep3.length +
+    prog.completedStep4.length +
+    prog.completedStep5.length
+  );
+}
+
+function detectEarlyBadges(prevBadges, totalLessons, missionCount) {
   const newBadges = [];
-  if (lessons.length >= 1  && !prevBadges.includes('first_lesson'))  newBadges.push('first_lesson');
-  if (lessons.length >= 3  && !prevBadges.includes('three_lessons')) newBadges.push('three_lessons');
-  if (missions.length >= 1 && !prevBadges.includes('first_mission')) newBadges.push('first_mission');
-  if (lessons.length >= 5  && !prevBadges.includes('ai_doctor'))     newBadges.push('ai_doctor');
+  if (totalLessons >= 1 && !prevBadges.includes('first_lesson')) newBadges.push('first_lesson');
+  if (totalLessons >= 3 && !prevBadges.includes('three_lessons')) newBadges.push('three_lessons');
+  if (missionCount >= 1 && !prevBadges.includes('first_mission')) newBadges.push('first_mission');
   return newBadges;
 }
 
@@ -70,54 +78,56 @@ export function useProgress() {
     saveToStorage(newProgress);
   }
 
-  function completeLesson(lessonId) {
-    if (progress.completedLessons.includes(lessonId)) return null;
+  function makeStepCompleter(stepKey, badgeKey) {
+    return function completeStepLesson(lessonId) {
+      const current = progress[stepKey] || [];
+      if (current.includes(lessonId)) return null;
 
-    const newLessons = [...progress.completedLessons, lessonId];
-    const newXp = progress.xp + 50;
-    const newBadges = detectProgressBadges(progress.badges, newLessons, progress.completedMissions);
+      const newList = [...current, lessonId];
+      const newXp = progress.xp + 50;
+      const totalLessons = getTotalCompleted({ ...progress, [stepKey]: newList });
+      const newBadges = detectEarlyBadges(progress.badges, totalLessons, progress.completedMissions.length);
 
-    if (newLessons.length >= 12 && !progress.badges.includes('beginner_complete') && !newBadges.includes('beginner_complete')) {
-      newBadges.push('beginner_complete');
-    }
+      if (newList.length >= 6 && !progress.badges.includes(badgeKey) && !newBadges.includes(badgeKey)) {
+        newBadges.push(badgeKey);
+      }
+      const allBadges = [...progress.badges, ...newBadges];
 
-    const allBadges = [...progress.badges, ...newBadges];
+      const nextProgress = { ...progress, [stepKey]: newList, xp: newXp, badges: allBadges };
+      const all5Done =
+        nextProgress.completedStep1.length >= 6 &&
+        nextProgress.completedStep2.length >= 6 &&
+        nextProgress.completedStep3.length >= 6 &&
+        nextProgress.completedStep4.length >= 6 &&
+        nextProgress.completedStep5.length >= 6;
+      if (all5Done && !allBadges.includes('all_graduate')) {
+        newBadges.push('all_graduate');
+        nextProgress.badges = [...allBadges, 'all_graduate'];
+      }
 
-    const expertDone = (progress.completedExpertLessons || []).length;
-    if (newLessons.length >= 12 &&
-        (progress.completedAdvancedLessons || []).length >= 12 &&
-        expertDone >= 12 &&
-        progress.completedMissions.length >= 6 &&
-        !allBadges.includes('all_graduate')) {
-      newBadges.push('all_graduate');
-      allBadges.push('all_graduate');
-    }
-
-    update({ ...progress, completedLessons: newLessons, xp: newXp, badges: allBadges });
-    return { xp: 50, newBadges: newBadges.filter((b) => !BADGES[b]?.hidden) };
+      update(nextProgress);
+      return { xp: 50, newBadges: newBadges.filter((b) => !BADGES[b]?.hidden) };
+    };
   }
+
+  const completeStep1Lesson = makeStepCompleter('completedStep1', 'step1_complete');
+  const completeStep2Lesson = makeStepCompleter('completedStep2', 'step2_complete');
+  const completeStep3Lesson = makeStepCompleter('completedStep3', 'step3_complete');
+  const completeStep4Lesson = makeStepCompleter('completedStep4', 'step4_complete');
+  const completeStep5Lesson = makeStepCompleter('completedStep5', 'step5_complete');
 
   function completeMission(missionId) {
     if (progress.completedMissions.includes(missionId)) return null;
 
     const newMissions = [...progress.completedMissions, missionId];
     const newXp = progress.xp + 100;
-    const newBadges = detectProgressBadges(progress.badges, progress.completedLessons, newMissions);
+    const totalLessons = getTotalCompleted(progress);
+    const newBadges = detectEarlyBadges(progress.badges, totalLessons, newMissions.length);
     const allBadges = [...progress.badges, ...newBadges];
 
     if (newMissions.length >= 6 && !allBadges.includes('practice_complete')) {
       newBadges.push('practice_complete');
       allBadges.push('practice_complete');
-    }
-
-    const expertDone = (progress.completedExpertLessons || []).length;
-    if (progress.completedLessons.length >= 12 &&
-        (progress.completedAdvancedLessons || []).length >= 12 &&
-        expertDone >= 12 &&
-        newMissions.length >= 6 &&
-        !allBadges.includes('all_graduate')) {
-      newBadges.push('all_graduate');
-      allBadges.push('all_graduate');
     }
 
     update({ ...progress, completedMissions: newMissions, xp: newXp, badges: allBadges });
@@ -159,68 +169,16 @@ export function useProgress() {
     return Math.round(((xp - start) / (end - start)) * 100);
   }
 
-  function completeAdvancedLesson(lessonId) {
-    if ((progress.completedAdvancedLessons || []).includes(lessonId)) return null;
-    const newLessons = [...(progress.completedAdvancedLessons || []), lessonId];
-    const newXp = progress.xp + 50;
-    const newBadges = [];
-
-    if (newLessons.length >= 12 && !progress.badges.includes('advanced_complete')) {
-      newBadges.push('advanced_complete');
-    }
-    const allBadges = [...progress.badges, ...newBadges];
-
-    const expertDone = (progress.completedExpertLessons || []).length;
-    if (progress.completedLessons.length >= 12 &&
-        newLessons.length >= 12 &&
-        expertDone >= 12 &&
-        progress.completedMissions.length >= 6 &&
-        !allBadges.includes('all_graduate')) {
-      newBadges.push('all_graduate');
-      allBadges.push('all_graduate');
-    }
-
-    update({ ...progress, completedAdvancedLessons: newLessons, xp: newXp, badges: allBadges });
-    return { xp: 50, newBadges };
-  }
-
-  function completeExpertLesson(lessonId) {
-    if ((progress.completedExpertLessons || []).includes(lessonId)) return null;
-    const newLessons = [...(progress.completedExpertLessons || []), lessonId];
-    const newXp = progress.xp + 50;
-    const newBadges = [];
-
-    if (newLessons.length >= 12 && !progress.badges.includes('expert_complete')) {
-      newBadges.push('expert_complete');
-    }
-    const allBadges = [...progress.badges, ...newBadges];
-
-    if (progress.completedLessons.length >= 12 &&
-        (progress.completedAdvancedLessons || []).length >= 12 &&
-        newLessons.length >= 12 &&
-        progress.completedMissions.length >= 6 &&
-        !allBadges.includes('all_graduate')) {
-      newBadges.push('all_graduate');
-      allBadges.push('all_graduate');
-    }
-
-    update({ ...progress, completedExpertLessons: newLessons, xp: newXp, badges: allBadges });
-    return { xp: 50, newBadges };
-  }
-
   function getTotalProgress() {
-    // 12 基礎 + 12 活用 + 12 開発 + 6 実践 = 42
-    const total = 42;
-    const completed =
-      progress.completedLessons.length +
-      (progress.completedAdvancedLessons || []).length +
-      (progress.completedExpertLessons || []).length +
-      progress.completedMissions.length;
+    // 30 lessons (STEP1-5, 6 each) + 6 missions = 36
+    const total = 36;
+    const completed = getTotalCompleted(progress) + progress.completedMissions.length;
     return Math.round((completed / total) * 100);
   }
 
-  function getNextLesson(lessons) {
-    return lessons.find((l) => !progress.completedLessons.includes(l.id)) || null;
+  function getNextLesson(stepKey, lessons) {
+    const completed = progress[stepKey] || [];
+    return lessons.find((l) => !completed.includes(l.id)) || null;
   }
 
   function recordQuizResult(lessonId, isCorrect) {
@@ -237,31 +195,33 @@ export function useProgress() {
 
   function isGraduated() {
     return (
-      progress.completedLessons.length >= 12 &&
-      (progress.completedAdvancedLessons || []).length >= 12 &&
-      (progress.completedExpertLessons || []).length >= 12 &&
-      progress.completedMissions.length >= 6
+      progress.completedStep1.length >= 6 &&
+      progress.completedStep2.length >= 6 &&
+      progress.completedStep3.length >= 6 &&
+      progress.completedStep4.length >= 6 &&
+      progress.completedStep5.length >= 6
     );
   }
 
-  // 7段階の称号（XPベース）
   function getTitle() {
     const xp = progress.xp;
-    if (xp >= 3000) return { title: 'AIマスター',          displayLevel: 50, emoji: '🏆' };
-    if (xp >= 2000) return { title: 'AI個人開発者',        displayLevel: 40, emoji: '👑' };
-    if (xp >= 1500) return { title: 'AIビジネス実践者',    displayLevel: 30, emoji: '💰' };
-    if (xp >= 1000) return { title: 'AIデベロッパー',      displayLevel: 20, emoji: '🚀' };
-    if (xp >= 500)  return { title: 'AIクリエイター',      displayLevel: 10, emoji: '✨' };
-    if (xp >= 150)  return { title: 'AI活用者',            displayLevel: 5,  emoji: '🌱' };
-    return              { title: 'AI初心者',           displayLevel: 1,  emoji: '🎮' };
+    if (xp >= 2500) return { title: 'AIマスター',        displayLevel: 50, emoji: '🏆' };
+    if (xp >= 2000) return { title: 'AI個人開発者',      displayLevel: 40, emoji: '👑' };
+    if (xp >= 1500) return { title: 'AI収益化者',        displayLevel: 30, emoji: '💰' };
+    if (xp >= 1000) return { title: 'AIデベロッパー',    displayLevel: 20, emoji: '💻' };
+    if (xp >= 500)  return { title: 'AIクリエイター',    displayLevel: 10, emoji: '🎨' };
+    if (xp >= 150)  return { title: 'AI活用者',          displayLevel: 5,  emoji: '🌱' };
+    return              { title: 'AI初心者',         displayLevel: 1,  emoji: '🎮' };
   }
 
   return {
     progress,
-    completeLesson,
+    completeStep1Lesson,
+    completeStep2Lesson,
+    completeStep3Lesson,
+    completeStep4Lesson,
+    completeStep5Lesson,
     completeMission,
-    completeAdvancedLesson,
-    completeExpertLesson,
     saveMemo,
     setWelcomeSeen,
     resetAll,

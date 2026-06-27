@@ -2,9 +2,11 @@ import { useState, useEffect, useRef } from 'react';
 import './App.css';
 
 import { useProgress } from './hooks/useProgress';
-import { lessons } from './data/lessons';
-import { lessonsAdvanced } from './data/lessonsAdvanced';
-import { lessonsExpert } from './data/lessonsExpert';
+import { lessonsStep1 } from './data/lessonsStep1';
+import { lessonsStep2 } from './data/lessonsStep2';
+import { lessonsStep3 } from './data/lessonsStep3';
+import { lessonsStep4 } from './data/lessonsStep4';
+import { lessonsStep5 } from './data/lessonsStep5';
 import { missions } from './data/missions';
 
 import BottomNav from './components/BottomNav';
@@ -21,6 +23,14 @@ import ToolsScreen from './screens/ToolsScreen';
 import MyPageScreen from './screens/MyPageScreen';
 import RoadmapScreen from './screens/RoadmapScreen';
 
+const ALL_STEPS = {
+  step1: { lessons: lessonsStep1, completedKey: 'completedStep1', courseType: 'step1' },
+  step2: { lessons: lessonsStep2, completedKey: 'completedStep2', courseType: 'step2' },
+  step3: { lessons: lessonsStep3, completedKey: 'completedStep3', courseType: 'step3' },
+  step4: { lessons: lessonsStep4, completedKey: 'completedStep4', courseType: 'step4' },
+  step5: { lessons: lessonsStep5, completedKey: 'completedStep5', courseType: 'step5' },
+};
+
 export default function App() {
   const [activeTab, setActiveTab] = useState('home');
   const [subScreen, setSubScreen] = useState(null);
@@ -32,10 +42,12 @@ export default function App() {
 
   const {
     progress,
-    completeLesson,
+    completeStep1Lesson,
+    completeStep2Lesson,
+    completeStep3Lesson,
+    completeStep4Lesson,
+    completeStep5Lesson,
     completeMission,
-    completeAdvancedLesson,
-    completeExpertLesson,
     saveMemo,
     setWelcomeSeen,
     resetAll,
@@ -48,6 +60,14 @@ export default function App() {
     isGraduated,
     getTitle,
   } = useProgress();
+
+  const completeFns = {
+    step1: completeStep1Lesson,
+    step2: completeStep2Lesson,
+    step3: completeStep3Lesson,
+    step4: completeStep4Lesson,
+    step5: completeStep5Lesson,
+  };
 
   const showWelcome = !progress.welcomeSeen;
 
@@ -80,27 +100,10 @@ export default function App() {
     badgeTimerRef.current = setTimeout(() => setBadgeModal(badgeId), 500);
   }
 
-  function handleLessonComplete() {
-    if (!subScreen || subScreen.type !== 'lesson') return;
-    const result = completeLesson(subScreen.id);
-    if (result) {
-      triggerXpToast(result.xp);
-      if (result.newBadges.length > 0) triggerBadge(result.newBadges[0]);
-    }
-  }
-
-  function handleAdvancedLessonComplete() {
-    if (!subScreen || subScreen.type !== 'advancedLesson') return;
-    const result = completeAdvancedLesson(subScreen.id);
-    if (result) {
-      triggerXpToast(result.xp);
-      if (result.newBadges.length > 0) triggerBadge(result.newBadges[0]);
-    }
-  }
-
-  function handleExpertLessonComplete() {
-    if (!subScreen || subScreen.type !== 'expertLesson') return;
-    const result = completeExpertLesson(subScreen.id);
+  function handleStepLessonComplete(stepKey) {
+    if (!subScreen || subScreen.type !== stepKey) return;
+    const fn = completeFns[stepKey];
+    const result = fn?.(subScreen.id);
     if (result) {
       triggerXpToast(result.xp);
       if (result.newBadges.length > 0) triggerBadge(result.newBadges[0]);
@@ -129,17 +132,17 @@ export default function App() {
   }, []);
 
   function getLearningInitialTab() {
-    if (subScreen?.type === 'advancedTab')      return 'advanced';
-    if (subScreen?.type === 'expertTab')        return 'expert';
-    if (subScreen?.type === 'practiceTab')      return 'practice';
-    if (subScreen?.type === 'monetizationTab')  return 'monetization';
-    if (subScreen?.type === 'graduationTab')    return 'graduation';
-    if (subScreen?.type === 'specialTab')       return 'special';
-    return 'beginner';
+    if (subScreen?.type === 'step2Tab') return 'step2';
+    if (subScreen?.type === 'step3Tab') return 'step3';
+    if (subScreen?.type === 'step4Tab') return 'step4';
+    if (subScreen?.type === 'step5Tab') return 'step5';
+    if (subScreen?.type === 'step6Tab') return 'step6';
+    if (subScreen?.type === 'libraryTab') return 'library';
+    return 'step1';
   }
 
   function renderContent() {
-    // Roadmap screen (from home)
+    // Roadmap screen
     if (activeTab === 'home' && subScreen?.type === 'roadmap') {
       return (
         <RoadmapScreen
@@ -150,67 +153,32 @@ export default function App() {
       );
     }
 
-    // Lesson detail screens
-    if (activeTab === 'learning' && subScreen?.type === 'lesson') {
+    // Step lesson detail screens
+    const stepTypes = ['step1', 'step2', 'step3', 'step4', 'step5'];
+    if (activeTab === 'learning' && stepTypes.includes(subScreen?.type)) {
+      const stepKey = subScreen.type;
+      const { lessons, completedKey, courseType } = ALL_STEPS[stepKey];
       const lessonIdx = lessons.findIndex((l) => l.id === subScreen.id);
       const lesson = lessons[lessonIdx];
+      if (!lesson) return null;
       return (
         <LessonDetailScreen
           key={subScreen.id}
           lesson={lesson}
-          isCompleted={progress.completedLessons.includes(subScreen.id)}
-          onComplete={handleLessonComplete}
+          isCompleted={(progress[completedKey] || []).includes(subScreen.id)}
+          onComplete={() => handleStepLessonComplete(stepKey)}
           onBack={handleBack}
           onQuizSubmit={(isCorrect) => recordQuizResult(subScreen.id, isCorrect)}
-          courseType="beginner"
+          courseType={courseType}
           courseIndex={lessonIdx + 1}
           prevLesson={lessonIdx > 0 ? lessons[lessonIdx - 1] : null}
           nextLesson={lessonIdx < lessons.length - 1 ? lessons[lessonIdx + 1] : null}
-          onNavigateLesson={(id) => { setSubScreen({ type: 'lesson', id }); scrollToTop(); }}
+          onNavigateLesson={(id) => { setSubScreen({ type: stepKey, id }); scrollToTop(); }}
         />
       );
     }
 
-    if (activeTab === 'learning' && subScreen?.type === 'advancedLesson') {
-      const lessonIdx = lessonsAdvanced.findIndex((l) => l.id === subScreen.id);
-      const lesson = lessonsAdvanced[lessonIdx];
-      return (
-        <LessonDetailScreen
-          key={subScreen.id}
-          lesson={lesson}
-          isCompleted={(progress.completedAdvancedLessons || []).includes(subScreen.id)}
-          onComplete={handleAdvancedLessonComplete}
-          onBack={handleBack}
-          onQuizSubmit={(isCorrect) => recordQuizResult(subScreen.id, isCorrect)}
-          courseType="advanced"
-          courseIndex={lessonIdx + 1}
-          prevLesson={lessonIdx > 0 ? lessonsAdvanced[lessonIdx - 1] : null}
-          nextLesson={lessonIdx < lessonsAdvanced.length - 1 ? lessonsAdvanced[lessonIdx + 1] : null}
-          onNavigateLesson={(id) => { setSubScreen({ type: 'advancedLesson', id }); scrollToTop(); }}
-        />
-      );
-    }
-
-    if (activeTab === 'learning' && subScreen?.type === 'expertLesson') {
-      const lessonIdx = lessonsExpert.findIndex((l) => l.id === subScreen.id);
-      const lesson = lessonsExpert[lessonIdx];
-      return (
-        <LessonDetailScreen
-          key={subScreen.id}
-          lesson={lesson}
-          isCompleted={(progress.completedExpertLessons || []).includes(subScreen.id)}
-          onComplete={handleExpertLessonComplete}
-          onBack={handleBack}
-          onQuizSubmit={(isCorrect) => recordQuizResult(subScreen.id, isCorrect)}
-          courseType="expert"
-          courseIndex={lessonIdx + 1}
-          prevLesson={lessonIdx > 0 ? lessonsExpert[lessonIdx - 1] : null}
-          nextLesson={lessonIdx < lessonsExpert.length - 1 ? lessonsExpert[lessonIdx + 1] : null}
-          onNavigateLesson={(id) => { setSubScreen({ type: 'expertLesson', id }); scrollToTop(); }}
-        />
-      );
-    }
-
+    // Mission detail
     if (activeTab === 'practice' && subScreen?.type === 'mission') {
       const mission = missions.find((m) => m.id === subScreen.id);
       return (
@@ -235,9 +203,11 @@ export default function App() {
             getTotalProgress={getTotalProgress}
             getNextLesson={getNextLesson}
             getTitle={getTitle}
-            lessons={lessons}
-            lessonsAdvanced={lessonsAdvanced}
-            lessonsExpert={lessonsExpert}
+            lessonsStep1={lessonsStep1}
+            lessonsStep2={lessonsStep2}
+            lessonsStep3={lessonsStep3}
+            lessonsStep4={lessonsStep4}
+            lessonsStep5={lessonsStep5}
             missions={missions}
             onNavigate={handleNavigate}
           />
@@ -245,15 +215,21 @@ export default function App() {
       case 'learning':
         return (
           <LearningScreen
-            lessons={lessons}
-            completedLessons={progress.completedLessons}
-            onSelectLesson={(id) => { setSubScreen({ type: 'lesson', id }); scrollToTop(); }}
-            lessonsAdvanced={lessonsAdvanced}
-            completedAdvancedLessons={progress.completedAdvancedLessons}
-            onSelectAdvancedLesson={(id) => { setSubScreen({ type: 'advancedLesson', id }); scrollToTop(); }}
-            lessonsExpert={lessonsExpert}
-            completedExpertLessons={progress.completedExpertLessons}
-            onSelectExpertLesson={(id) => { setSubScreen({ type: 'expertLesson', id }); scrollToTop(); }}
+            lessonsStep1={lessonsStep1}
+            completedStep1={progress.completedStep1}
+            onSelectStep1={(id) => { setSubScreen({ type: 'step1', id }); scrollToTop(); }}
+            lessonsStep2={lessonsStep2}
+            completedStep2={progress.completedStep2}
+            onSelectStep2={(id) => { setSubScreen({ type: 'step2', id }); scrollToTop(); }}
+            lessonsStep3={lessonsStep3}
+            completedStep3={progress.completedStep3}
+            onSelectStep3={(id) => { setSubScreen({ type: 'step3', id }); scrollToTop(); }}
+            lessonsStep4={lessonsStep4}
+            completedStep4={progress.completedStep4}
+            onSelectStep4={(id) => { setSubScreen({ type: 'step4', id }); scrollToTop(); }}
+            lessonsStep5={lessonsStep5}
+            completedStep5={progress.completedStep5}
+            onSelectStep5={(id) => { setSubScreen({ type: 'step5', id }); scrollToTop(); }}
             missions={missions}
             completedMissions={progress.completedMissions}
             initialTab={getLearningInitialTab()}

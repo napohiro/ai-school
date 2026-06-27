@@ -1,33 +1,26 @@
 import { COURSES } from '../data/courses';
 
 const GRADUATION_SKILLS = [
-  'AI活用', 'プロンプト設計', 'コンテンツ制作', '自動化',
-  'GitHub', 'Vercel', 'Supabase', 'API', 'AIアプリ開発',
+  'AI基礎', 'プロンプト設計', 'コンテンツ制作', '画像生成',
+  'Claude Code', 'GitHub', 'Vercel', 'AI副業', 'AI SaaS',
 ];
 
-function getDoneCount(courseId, progress) {
-  switch (courseId) {
-    case 'beginner':  return progress.completedLessons.length;
-    case 'advanced':  return (progress.completedAdvancedLessons || []).length;
-    case 'expert':    return (progress.completedExpertLessons || []).length;
-    case 'practice':  return progress.completedMissions.length;
-    default:          return 0;
-  }
-}
-
-function getCourseTotal(courseId) {
-  switch (courseId) {
-    case 'beginner': case 'advanced': case 'expert': return 12;
-    case 'practice':  return 6;
-    default:          return 0;
-  }
+function getDoneCount(stepId, progress) {
+  const map = {
+    step1: progress.completedStep1?.length || 0,
+    step2: progress.completedStep2?.length || 0,
+    step3: progress.completedStep3?.length || 0,
+    step4: progress.completedStep4?.length || 0,
+    step5: progress.completedStep5?.length || 0,
+    step6: 0,
+  };
+  return map[stepId] || 0;
 }
 
 function getStageStatus(courseId, progress) {
+  if (courseId === 'step6') return 'coming';
   const done = getDoneCount(courseId, progress);
-  const total = getCourseTotal(courseId);
-  if (total === 0) return 'coming';
-  if (done >= total) return 'completed';
+  if (done >= 6) return 'completed';
   if (done > 0) return 'active';
   return 'notstarted';
 }
@@ -41,21 +34,18 @@ const STATUS_CONFIG = {
 
 export default function RoadmapScreen({ progress, onBack, onNavigate }) {
   const graduated =
-    progress.completedLessons.length >= 12 &&
-    (progress.completedAdvancedLessons || []).length >= 12 &&
-    (progress.completedExpertLessons || []).length >= 12 &&
-    progress.completedMissions.length >= 6;
-
-  function getStatus(course) {
-    if (['monetization', 'graduation'].includes(course.id)) return 'coming';
-    return getStageStatus(course.id, progress);
-  }
+    (progress.completedStep1?.length || 0) >= 6 &&
+    (progress.completedStep2?.length || 0) >= 6 &&
+    (progress.completedStep3?.length || 0) >= 6 &&
+    (progress.completedStep4?.length || 0) >= 6 &&
+    (progress.completedStep5?.length || 0) >= 6;
 
   function handleCourseClick(course) {
-    if (course.id === 'practice') { onNavigate('practice'); return; }
-    if (course.id === 'monetization') { onNavigate('learning', { type: 'monetizationTab' }); return; }
-    if (course.id === 'graduation') { onNavigate('learning', { type: 'graduationTab' }); return; }
-    onNavigate('learning', { type: course.id + 'Tab' });
+    if (course.id === 'step6') {
+      onNavigate('learning', { type: 'step6Tab' });
+      return;
+    }
+    onNavigate('learning', { type: `${course.id}Tab` });
   }
 
   return (
@@ -82,7 +72,7 @@ export default function RoadmapScreen({ progress, onBack, onNavigate }) {
           🗺️ 学習ロードマップ
         </h1>
         <p style={{ fontSize: '13px', opacity: 0.75, margin: 0, lineHeight: 1.6 }}>
-          AIを武器に人生・仕事・ビジネスを変える<br />6ステージの成長ロードマップ
+          STEP1〜6で、AIを武器に人生・仕事・ビジネスを変える<br />6段階の成長ロードマップ
         </p>
       </div>
 
@@ -99,20 +89,19 @@ export default function RoadmapScreen({ progress, onBack, onNavigate }) {
           </div>
           <div style={{ fontSize: '14px', fontWeight: 700, color: '#1e293b', lineHeight: 1.7 }}>
             AIを使える人ではなく、<br />
-            <span style={{ color: '#6366f1' }}>AIを武器に人生・仕事・ビジネスを</span><br />
-            変えられる人を育てるスクール。
+            <span style={{ color: '#6366f1' }}>AIを武器に収益を得て、自立できる人</span><br />
+            を育てるスクール。
           </div>
         </div>
 
         {/* Roadmap Stages */}
         <div style={{ marginBottom: '24px' }}>
           {COURSES.map((course, idx) => {
-            const status = getStatus(course);
+            const status = getStageStatus(course.id, progress);
             const cfg = STATUS_CONFIG[status];
             const done = getDoneCount(course.id, progress);
-            const total = getCourseTotal(course.id);
+            const total = course.id === 'step6' ? 0 : 6;
             const pct = total > 0 ? Math.round((done / total) * 100) : 0;
-            const isClickable = true;
 
             return (
               <div key={course.id}>
@@ -141,7 +130,7 @@ export default function RoadmapScreen({ progress, onBack, onNavigate }) {
                       alignItems: 'center', justifyContent: 'center', flexShrink: 0,
                     }}>
                       <div style={{ fontSize: '20px', lineHeight: 1 }}>{course.emoji}</div>
-                      <div style={{ fontSize: '10px', fontWeight: 800, color: course.color, marginTop: '1px' }}>
+                      <div style={{ fontSize: '9px', fontWeight: 800, color: course.color, marginTop: '1px' }}>
                         {course.level}
                       </div>
                     </div>
@@ -233,7 +222,7 @@ export default function RoadmapScreen({ progress, onBack, onNavigate }) {
                   AIスクール認定 AI個人開発者
                 </div>
                 <div style={{ fontSize: '12px', color: '#94a3b8' }}>
-                  コア全修了（基礎〜実践）で取得できます
+                  STEP1〜5全修了＋卒業制作提出で取得できます
                 </div>
               </>
             )}
