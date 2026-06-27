@@ -17,15 +17,20 @@ const STEP_LABELS = {
   expert: '開発編',
 };
 
-function SectionLabel({ num, label, color }) {
+/* 統一セクションラベル — 番号 + テキスト */
+function SectionLabel({ num, label }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
       <span style={{
-        background: color, color: 'white',
-        borderRadius: '6px', padding: '3px 10px',
-        fontSize: '10px', fontWeight: 800, letterSpacing: '0.5px', flexShrink: 0,
-      }}>STEP {num}</span>
-      <span style={{ fontSize: '15px', fontWeight: 700, color: '#1e293b' }}>{label}</span>
+        width: '22px', height: '22px',
+        background: 'var(--navy)', color: 'white',
+        borderRadius: '5px', fontSize: '11px', fontWeight: 600,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        flexShrink: 0,
+      }}>{num}</span>
+      <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text)', letterSpacing: '-0.1px' }}>
+        {label}
+      </span>
     </div>
   );
 }
@@ -41,42 +46,38 @@ export default function LessonDetailScreen({
   nextLesson,
   onNavigateLesson,
 }) {
-  const [goalChecks, setGoalChecks] = useState([]);
+  const [goalChecks, setGoalChecks]     = useState([]);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
-  const [submitted, setSubmitted] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const [submitted, setSubmitted]       = useState(false);
+  const [copied, setCopied]             = useState(false);
   const [justCompleted, setJustCompleted] = useState(false);
 
   if (!lesson) return null;
 
-  const { quiz } = lesson;
-  const isCorrect = quiz ? selectedAnswer === quiz.answer : false;
+  const { quiz }    = lesson;
+  const isCorrect   = quiz ? selectedAnswer === quiz.answer : false;
   const canComplete = quiz ? submitted : true;
-  const showDone = justCompleted || isCompleted;
+  const showDone    = justCompleted || isCompleted;
 
-  const color = STEP_COLORS[courseType] || '#6366f1';
-  const stepLabel = STEP_LABELS[courseType] || '';
+  const color       = STEP_COLORS[courseType] || 'var(--primary)';
+  const stepLabel   = STEP_LABELS[courseType] || '';
   const achieveItems = lesson.canDo || lesson.points || [];
 
   function toggleGoal(i) {
-    setGoalChecks(prev => prev.includes(i) ? prev.filter(x => x !== i) : [...prev, i]);
+    setGoalChecks((prev) => prev.includes(i) ? prev.filter((x) => x !== i) : [...prev, i]);
   }
-
   function handleSelect(index) {
     if (!submitted) setSelectedAnswer(index);
   }
-
   function handleSubmitQuiz() {
     if (selectedAnswer === null) return;
     setSubmitted(true);
     if (onQuizSubmit) onQuizSubmit(selectedAnswer === quiz.answer);
   }
-
   function handleComplete() {
     setJustCompleted(true);
     onComplete();
   }
-
   function handleCopy() {
     if (lesson.practice?.promptExample) {
       navigator.clipboard.writeText(lesson.practice.promptExample).catch(() => {});
@@ -84,7 +85,6 @@ export default function LessonDetailScreen({
       setTimeout(() => setCopied(false), 2000);
     }
   }
-
   function getOptionClass(index) {
     if (!submitted) return selectedAnswer === index ? 'quiz-option selected' : 'quiz-option';
     if (index === quiz.answer) return 'quiz-option correct disabled';
@@ -93,48 +93,45 @@ export default function LessonDetailScreen({
   }
 
   const checkedCount = goalChecks.length;
-  const totalGoals = lesson.todayGoal?.length ?? 0;
+  const totalGoals   = lesson.todayGoal?.length ?? 0;
 
   return (
-    <div style={{ background: '#fff', minHeight: '100%' }}>
+    <div style={{ background: 'var(--surface)', minHeight: '100%' }}>
 
       {/* ── HEADER ── */}
       <div style={{ background: color, padding: '16px 20px 28px', position: 'relative', overflow: 'hidden' }}>
-        <div style={{
-          position: 'absolute', top: -50, right: -50, width: 160, height: 160,
-          background: 'rgba(255,255,255,0.07)', borderRadius: '50%', pointerEvents: 'none',
-        }} />
         <div style={{ position: 'relative', zIndex: 1 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
             <button
               onClick={onBack}
               style={{
-                background: 'rgba(255,255,255,0.18)', border: 'none', color: 'white',
+                background: 'rgba(255,255,255,0.15)', border: 'none', color: 'white',
                 borderRadius: '8px', padding: '7px 14px', fontFamily: 'inherit',
-                fontSize: '13px', fontWeight: 700, cursor: 'pointer',
+                fontSize: '13px', fontWeight: 600, cursor: 'pointer',
               }}
             >
               ‹ 戻る
             </button>
             {stepLabel && (
               <span style={{
-                background: 'rgba(255,255,255,0.18)', color: 'white',
-                borderRadius: '20px', padding: '4px 12px', fontSize: '11px', fontWeight: 700,
+                background: 'rgba(255,255,255,0.15)', color: 'white',
+                borderRadius: '20px', padding: '4px 12px',
+                fontSize: '11px', fontWeight: 600,
               }}>
                 {stepLabel}
               </span>
             )}
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-            <span style={{ fontSize: '44px', lineHeight: 1 }}>{lesson.emoji}</span>
+            <span style={{ fontSize: '40px', lineHeight: 1 }}>{lesson.emoji}</span>
             <div>
               <h1 style={{
-                color: 'white', fontSize: '20px', fontWeight: 900,
+                color: 'white', fontSize: '19px', fontWeight: 700,
                 letterSpacing: '-0.3px', margin: 0, lineHeight: 1.25,
               }}>
                 {lesson.title}
               </h1>
-              <div style={{ color: 'rgba(255,255,255,0.75)', fontSize: '12px', marginTop: '5px' }}>
+              <div style={{ color: 'rgba(255,255,255,0.65)', fontSize: '12px', marginTop: '5px', fontWeight: 400 }}>
                 {lesson.duration}{isCompleted && ' · 完了済み'}
               </div>
             </div>
@@ -144,13 +141,13 @@ export default function LessonDetailScreen({
 
       <div style={{ padding: '24px 20px' }}>
 
-        {/* ── STEP 1: 今日のゴール ── */}
+        {/* ── 1: 今日のゴール ── */}
         {lesson.todayGoal && (
           <div style={{
-            background: '#f0f9ff', border: '1.5px solid #bae6fd',
-            borderRadius: '16px', padding: '18px', marginBottom: '28px',
+            border: '1px solid var(--border)',
+            borderRadius: '12px', padding: '18px', marginBottom: '24px',
           }}>
-            <SectionLabel num={1} label="今日のゴール" color="#0ea5e9" />
+            <SectionLabel num={1} label="今日のゴール" />
             {lesson.todayGoal.map((item, i) => (
               <button
                 key={i}
@@ -158,63 +155,63 @@ export default function LessonDetailScreen({
                 style={{
                   display: 'flex', alignItems: 'center', gap: '12px',
                   width: '100%', background: 'none', border: 'none',
-                  padding: '8px 0', cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit',
-                  borderBottom: i < lesson.todayGoal.length - 1 ? '1px solid rgba(186,230,253,0.5)' : 'none',
+                  padding: '9px 0', cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit',
+                  borderBottom: i < lesson.todayGoal.length - 1 ? '1px solid var(--border-light)' : 'none',
                 }}
               >
                 <span style={{
-                  width: 22, height: 22, borderRadius: '6px', flexShrink: 0, minWidth: 22,
-                  border: `2px solid ${goalChecks.includes(i) ? '#0ea5e9' : '#94a3b8'}`,
-                  background: goalChecks.includes(i) ? '#0ea5e9' : 'white',
+                  width: 20, height: 20, borderRadius: '5px', flexShrink: 0, minWidth: 20,
+                  border: `1.5px solid ${goalChecks.includes(i) ? 'var(--primary)' : 'var(--border)'}`,
+                  background: goalChecks.includes(i) ? 'var(--primary)' : 'white',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   transition: 'all 0.15s',
                 }}>
                   {goalChecks.includes(i) && (
-                    <span style={{ color: 'white', fontSize: '12px', fontWeight: 800 }}>✓</span>
+                    <span style={{ color: 'white', fontSize: '11px', fontWeight: 700 }}>✓</span>
                   )}
                 </span>
                 <span style={{
-                  fontSize: '13px', fontWeight: 500, lineHeight: 1.5,
-                  color: goalChecks.includes(i) ? '#94a3b8' : '#0f172a',
+                  fontSize: '13px', fontWeight: 400, lineHeight: 1.55,
+                  color: goalChecks.includes(i) ? 'var(--text-muted)' : 'var(--text)',
                   textDecoration: goalChecks.includes(i) ? 'line-through' : 'none',
                 }}>
                   {item}
                 </span>
               </button>
             ))}
-            <div style={{ marginTop: '10px', fontSize: '12px', color: '#0369a1', fontWeight: 600 }}>
+            <div style={{ marginTop: '10px', fontSize: '11px', color: 'var(--text-muted)', fontWeight: 500 }}>
               {checkedCount}/{totalGoals} 確認済み
             </div>
           </div>
         )}
 
-        {/* ── STEP 2: 5分で読む ── */}
-        <div style={{ marginBottom: '28px' }}>
-          <SectionLabel num={2} label="5分で読む" color={color} />
-          <div style={{ fontSize: '15px', lineHeight: 2.0, color: '#1e293b', whiteSpace: 'pre-line' }}>
+        {/* ── 2: 5分で読む ── */}
+        <div style={{ marginBottom: '24px' }}>
+          <SectionLabel num={2} label="5分で読む" />
+          <div style={{ fontSize: '14px', lineHeight: 2.0, color: 'var(--text)', whiteSpace: 'pre-line' }}>
             {lesson.content}
           </div>
           {lesson.analogy && (
             <div style={{
-              background: '#fffbeb', borderLeft: '4px solid #f59e0b',
-              borderRadius: '0 12px 12px 0', padding: '14px 16px',
-              marginTop: '20px', fontSize: '13px', color: '#78350f', lineHeight: 1.8,
+              background: 'var(--warning-bg)', borderLeft: '3px solid var(--warning)',
+              borderRadius: '0 10px 10px 0', padding: '12px 16px',
+              marginTop: '18px', fontSize: '13px', color: '#78350f', lineHeight: 1.7,
             }}>
-              💡 {lesson.analogy}
+              {lesson.analogy}
             </div>
           )}
         </div>
 
-        {/* ── STEP 3: 実践する ── */}
+        {/* ── 3: 実践する ── */}
         {lesson.practice && (
           <div style={{
-            background: '#f8fafc', border: '1px solid #e2e8f0',
-            borderRadius: '16px', padding: '18px', marginBottom: '28px',
+            background: 'var(--raised)', border: '1px solid var(--border)',
+            borderRadius: '12px', padding: '18px', marginBottom: '24px',
           }}>
-            <SectionLabel num={3} label="実践する" color="#10b981" />
+            <SectionLabel num={3} label="実践する" />
 
             {lesson.practice.intro && (
-              <p style={{ fontSize: '13px', color: '#475569', marginBottom: '16px', lineHeight: 1.7 }}>
+              <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '16px', lineHeight: 1.7 }}>
                 {lesson.practice.intro}
               </p>
             )}
@@ -222,14 +219,14 @@ export default function LessonDetailScreen({
             {lesson.practice.steps?.map((step, i) => (
               <div key={i} style={{ display: 'flex', gap: '12px', marginBottom: '12px', alignItems: 'flex-start' }}>
                 <span style={{
-                  width: 24, height: 24, borderRadius: '50%',
-                  background: '#10b981', color: 'white',
-                  fontSize: '11px', fontWeight: 800, flexShrink: 0,
+                  width: 22, height: 22, borderRadius: '50%',
+                  background: 'var(--navy)', color: 'white',
+                  fontSize: '10px', fontWeight: 700, flexShrink: 0,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
                   {i + 1}
                 </span>
-                <span style={{ fontSize: '13px', color: '#1e293b', lineHeight: 1.7, paddingTop: '3px' }}>
+                <span style={{ fontSize: '13px', color: 'var(--text)', lineHeight: 1.7, paddingTop: '2px' }}>
                   {step}
                 </span>
               </div>
@@ -237,8 +234,11 @@ export default function LessonDetailScreen({
 
             {lesson.practice.promptExample && (
               <div style={{ marginTop: '16px' }}>
-                <div style={{ fontSize: '11px', fontWeight: 700, color: '#64748b', marginBottom: '8px', letterSpacing: '0.5px' }}>
-                  ✍️ コピーして使う
+                <div style={{
+                  fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)',
+                  marginBottom: '8px', letterSpacing: '0.5px',
+                }}>
+                  コピーして使う
                 </div>
                 <div className="prompt-box">
                   <pre>{lesson.practice.promptExample}</pre>
@@ -257,47 +257,47 @@ export default function LessonDetailScreen({
                 style={{
                   display: 'inline-flex', alignItems: 'center', gap: '6px',
                   background: color, color: 'white',
-                  borderRadius: '10px', padding: '11px 18px',
-                  fontSize: '13px', fontWeight: 700, textDecoration: 'none',
+                  borderRadius: '8px', padding: '10px 16px',
+                  fontSize: '13px', fontWeight: 600, textDecoration: 'none',
                   marginTop: '14px',
                 }}
               >
-                🔗 {lesson.practice.tool} を開く →
+                {lesson.practice.tool} を開く →
               </a>
             )}
           </div>
         )}
 
-        {/* ── STEP 4: できるようになったこと ── */}
+        {/* ── 4: できるようになったこと ── */}
         {achieveItems.length > 0 && (
           <div style={{
-            background: showDone ? '#f0fdf4' : '#f8fafc',
-            border: `1.5px solid ${showDone ? '#86efac' : '#e2e8f0'}`,
-            borderRadius: '16px', padding: '18px', marginBottom: '28px',
+            background: showDone ? 'var(--success-bg)' : 'var(--surface)',
+            border: `1px solid ${showDone ? '#86efac' : 'var(--border)'}`,
+            borderRadius: '12px', padding: '18px', marginBottom: '24px',
             transition: 'all 0.3s ease',
           }}>
-            <SectionLabel num={4} label="できるようになったこと" color="#059669" />
+            <SectionLabel num={4} label="できるようになったこと" />
             {achieveItems.map((item, i) => (
               <div key={i} style={{
                 display: 'flex', alignItems: 'flex-start', gap: '10px',
-                padding: '9px 12px',
-                background: showDone ? 'white' : 'rgba(255,255,255,0.6)',
-                borderRadius: '10px', marginBottom: '6px',
+                padding: '8px 10px',
+                background: showDone ? 'white' : 'var(--raised)',
+                borderRadius: '8px', marginBottom: '6px',
               }}>
                 <span style={{
-                  width: 20, height: 20, borderRadius: '50%', flexShrink: 0,
-                  background: showDone ? '#10b981' : '#e2e8f0',
-                  color: showDone ? 'white' : '#94a3b8',
-                  fontSize: '10px', fontWeight: 800,
+                  width: 18, height: 18, borderRadius: '50%', flexShrink: 0,
+                  background: showDone ? 'var(--success)' : 'var(--border)',
+                  color: showDone ? 'white' : 'var(--text-muted)',
+                  fontSize: '9px', fontWeight: 700,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   transition: 'all 0.3s',
                 }}>
-                  {showDone ? '✓' : '…'}
+                  {showDone ? '✓' : '·'}
                 </span>
                 <span style={{
-                  fontSize: '13px', fontWeight: showDone ? 600 : 500,
-                  color: showDone ? '#1e293b' : '#94a3b8',
-                  lineHeight: 1.5, transition: 'all 0.3s',
+                  fontSize: '13px', fontWeight: showDone ? 500 : 400,
+                  color: showDone ? 'var(--text)' : 'var(--text-muted)',
+                  lineHeight: 1.55, transition: 'all 0.3s',
                 }}>
                   {item}
                 </span>
@@ -306,19 +306,22 @@ export default function LessonDetailScreen({
             {showDone && (
               <div style={{
                 marginTop: '12px', textAlign: 'center',
-                fontSize: '14px', fontWeight: 800, color: '#059669',
+                fontSize: '13px', fontWeight: 700, color: 'var(--success)',
               }}>
-                ✨ +50 XP 獲得！
+                +50 XP 獲得
               </div>
             )}
           </div>
         )}
 
-        {/* ── STEP 5: 確認クイズ ── */}
+        {/* ── 5: 確認クイズ ── */}
         {quiz && (
-          <div style={{ marginBottom: '28px' }}>
-            <SectionLabel num={5} label="確認クイズ" color="#6366f1" />
-            <div style={{ fontSize: '15px', fontWeight: 700, color: '#1e293b', marginBottom: '18px', lineHeight: 1.6 }}>
+          <div style={{ marginBottom: '24px' }}>
+            <SectionLabel num={5} label="確認クイズ" />
+            <div style={{
+              fontSize: '15px', fontWeight: 600, color: 'var(--text)',
+              marginBottom: '16px', lineHeight: 1.6,
+            }}>
               {quiz.question}
             </div>
             {quiz.options.map((option, index) => (
@@ -328,16 +331,16 @@ export default function LessonDetailScreen({
                 onClick={() => handleSelect(index)}
               >
                 <span style={{
-                  width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
+                  width: 26, height: 26, borderRadius: '50%', flexShrink: 0,
                   background: submitted
-                    ? index === quiz.answer ? '#10b981'
-                    : index === selectedAnswer ? '#ef4444' : '#e2e8f0'
-                    : selectedAnswer === index ? color : '#e2e8f0',
+                    ? index === quiz.answer ? 'var(--success)'
+                      : index === selectedAnswer ? 'var(--error)' : 'var(--raised)'
+                    : selectedAnswer === index ? color : 'var(--raised)',
                   color: submitted
-                    ? (index === quiz.answer || index === selectedAnswer) ? 'white' : '#64748b'
-                    : selectedAnswer === index ? 'white' : '#64748b',
+                    ? (index === quiz.answer || index === selectedAnswer) ? 'white' : 'var(--text-muted)'
+                    : selectedAnswer === index ? 'white' : 'var(--text-muted)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: '13px', fontWeight: 700, transition: 'all 0.2s',
+                  fontSize: '12px', fontWeight: 700, transition: 'all 0.2s',
                 }}>
                   {String.fromCharCode(65 + index)}
                 </span>
@@ -345,20 +348,27 @@ export default function LessonDetailScreen({
               </button>
             ))}
             {!submitted && selectedAnswer !== null && (
-              <button className="btn btn-primary btn-full" style={{ marginTop: '4px' }} onClick={handleSubmitQuiz}>
+              <button
+                className="btn btn-primary btn-full"
+                style={{ marginTop: '4px' }}
+                onClick={handleSubmitQuiz}
+              >
                 答え合わせをする
               </button>
             )}
             {submitted && (
               <div style={{
-                background: isCorrect ? 'rgba(16,185,129,0.07)' : 'rgba(239,68,68,0.07)',
-                border: `1px solid ${isCorrect ? 'rgba(16,185,129,0.25)' : 'rgba(239,68,68,0.25)'}`,
-                borderRadius: '12px', padding: '16px', marginTop: '4px',
+                background: isCorrect ? 'rgba(5,150,105,0.06)' : 'rgba(220,38,38,0.06)',
+                border: `1px solid ${isCorrect ? 'rgba(5,150,105,0.2)' : 'rgba(220,38,38,0.2)'}`,
+                borderRadius: '10px', padding: '14px 16px', marginTop: '4px',
               }}>
-                <div style={{ fontWeight: 800, fontSize: '15px', color: isCorrect ? '#065f46' : '#991b1b', marginBottom: '6px' }}>
-                  {isCorrect ? '🎉 正解！' : `😅 惜しい！正解は「${quiz.options[quiz.answer]}」`}
+                <div style={{
+                  fontWeight: 700, fontSize: '14px',
+                  color: isCorrect ? '#065f46' : '#991b1b', marginBottom: '6px',
+                }}>
+                  {isCorrect ? '正解' : `惜しい。正解は「${quiz.options[quiz.answer]}」`}
                 </div>
-                <div style={{ fontSize: '13px', color: '#64748b', lineHeight: 1.7 }}>
+                <div style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.7 }}>
                   {quiz.explanation}
                 </div>
               </div>
@@ -366,15 +376,16 @@ export default function LessonDetailScreen({
           </div>
         )}
 
-        {/* ── 完了ボタン / 完了済みバナー ── */}
+        {/* ── 完了 ── */}
         {showDone ? (
           <div style={{
-            background: 'rgba(16,185,129,0.06)', border: '1.5px solid rgba(16,185,129,0.25)',
-            borderRadius: '14px', padding: '16px', textAlign: 'center', marginBottom: '12px',
+            background: 'rgba(5,150,105,0.06)', border: '1px solid rgba(5,150,105,0.2)',
+            borderRadius: '12px', padding: '16px', textAlign: 'center', marginBottom: '12px',
           }}>
-            <div style={{ fontSize: '22px', marginBottom: '6px' }}>✅</div>
-            <div style={{ fontWeight: 800, fontSize: '15px', color: '#065f46' }}>完了済み</div>
-            <div style={{ fontSize: '12px', color: '#10b981', marginTop: '3px', fontWeight: 600 }}>
+            <div style={{ fontWeight: 700, fontSize: '15px', color: '#065f46', marginBottom: '3px' }}>
+              完了済み
+            </div>
+            <div style={{ fontSize: '12px', color: 'var(--success)', fontWeight: 500 }}>
               +50 XP 獲得済み
             </div>
           </div>
@@ -385,7 +396,7 @@ export default function LessonDetailScreen({
             onClick={canComplete ? handleComplete : undefined}
             disabled={!canComplete}
           >
-            {canComplete ? '🎓 完了 +50 XP' : '👆 クイズに答えてから完了'}
+            {canComplete ? '完了 +50 XP' : 'クイズに答えてから完了'}
           </button>
         )}
 
@@ -400,20 +411,20 @@ export default function LessonDetailScreen({
               <button
                 onClick={() => onNavigateLesson(prevLesson.id)}
                 style={{
-                  background: '#f8fafc', border: '1px solid #e2e8f0',
-                  borderRadius: '12px', padding: '12px',
+                  background: 'var(--raised)', border: '1px solid var(--border)',
+                  borderRadius: '10px', padding: '12px',
                   cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
                   overflow: 'hidden', minWidth: 0,
                 }}
               >
-                <div style={{ fontSize: '10px', color: '#94a3b8', fontWeight: 600, marginBottom: '4px' }}>
+                <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 500, marginBottom: '4px' }}>
                   ‹ 前のレッスン
                 </div>
                 <div style={{
-                  fontSize: '12px', fontWeight: 700, color: '#1e293b', lineHeight: 1.4,
+                  fontSize: '12px', fontWeight: 600, color: 'var(--text)', lineHeight: 1.4,
                   overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                 }}>
-                  {prevLesson.emoji} {prevLesson.title}
+                  {prevLesson.title}
                 </div>
               </button>
             ) : <div />}
@@ -421,20 +432,20 @@ export default function LessonDetailScreen({
               <button
                 onClick={() => onNavigateLesson(nextLesson.id)}
                 style={{
-                  background: color, border: 'none',
-                  borderRadius: '12px', padding: '12px',
+                  background: 'var(--navy)', border: 'none',
+                  borderRadius: '10px', padding: '12px',
                   cursor: 'pointer', fontFamily: 'inherit', textAlign: 'right',
                   overflow: 'hidden', minWidth: 0,
                 }}
               >
-                <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.75)', fontWeight: 600, marginBottom: '4px' }}>
+                <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)', fontWeight: 500, marginBottom: '4px' }}>
                   次のレッスン ›
                 </div>
                 <div style={{
-                  fontSize: '12px', fontWeight: 700, color: 'white', lineHeight: 1.4,
+                  fontSize: '12px', fontWeight: 600, color: 'white', lineHeight: 1.4,
                   overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                 }}>
-                  {nextLesson.emoji} {nextLesson.title}
+                  {nextLesson.title}
                 </div>
               </button>
             )}
